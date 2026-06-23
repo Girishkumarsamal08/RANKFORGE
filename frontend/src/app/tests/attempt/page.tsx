@@ -28,6 +28,26 @@ export default function TestAttemptPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [natValue, setNatValue] = useState('');
+  const [isFsActive, setIsFsActive] = useState(true);
+
+  // Fullscreen state checker
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkFs = () => {
+      setIsFsActive(!!document.fullscreenElement);
+    };
+    checkFs();
+    document.addEventListener('fullscreenchange', checkFs);
+    return () => document.removeEventListener('fullscreenchange', checkFs);
+  }, []);
+
+  const triggerFullscreen = () => {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error('Failed to trigger fullscreen:', err);
+      });
+    }
+  };
 
   // 1. Redirect if no active attempt
   useEffect(() => {
@@ -58,7 +78,7 @@ export default function TestAttemptPage() {
     }
   }, [currentQuestionIndex, questions, answers]);
 
-  // 3. Anti-Cheat Monitoring (Visibility & Focus)
+  // 3. Anti-Cheat Monitoring (Visibility, Focus & Fullscreen)
   useEffect(() => {
     if (!attemptId) return;
 
@@ -92,12 +112,46 @@ export default function TestAttemptPage() {
       }
     };
 
+    const handleFullscreenChange = async () => {
+      if (!document.fullscreenElement) {
+        dispatch(incrementCheatCount());
+        try {
+          await testsApi.logCheat({
+            attemptId,
+            eventType: 'FULLSCREEN_EXIT',
+            details: 'User exited fullscreen mode during the active attempt.',
+          });
+        } catch (e) {
+          console.error(e);
+        }
+        alert('Warning: Fullscreen mode is mandatory for this GATE mock. Exiting fullscreen has been logged.');
+      }
+    };
+
+    // Try to request fullscreen on mount (best effort)
+    const requestFs = async () => {
+      try {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (err) {
+        console.log('Programmatic fullscreen request blocked. Needs user click.', err);
+      }
+    };
+    requestFs();
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      // Clean up fullscreen mode when leaving the test
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
     };
   }, [attemptId, dispatch]);
 
@@ -173,6 +227,18 @@ export default function TestAttemptPage() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 select-none">
       <Navbar />
+
+      {!isFsActive && (
+        <div className="flex w-full items-center justify-between bg-amber-500 px-6 py-2 text-xs font-bold text-white border-b border-amber-600 animate-pulse">
+          <span>Anti-Cheat Notice: Fullscreen mode is mandatory for this mock test.</span>
+          <button
+            onClick={triggerFullscreen}
+            className="rounded-lg bg-zinc-950 px-3 py-1.5 font-extrabold hover:bg-zinc-900 transition cursor-pointer"
+          >
+            Restore Fullscreen
+          </button>
+        </div>
+      )}
 
       {/* Test Workspace Header */}
       <div className="flex h-14 w-full items-center justify-between border-b border-zinc-200 bg-white px-6">
