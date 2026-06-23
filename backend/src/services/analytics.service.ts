@@ -65,7 +65,7 @@ export class AnalyticsService {
     // 3. Aggregate statistics
     const totalTests = attempts.length;
     const scores = attempts.map(a => a.score || 0);
-    const avgScore = parseFloat((scores.reduce((a, b) => a + b, 0) / totalTests).toFixed(2));
+    const avgScore = parseFloat((scores.reduce((a: number, b: number) => a + b, 0) / totalTests).toFixed(2));
     const maxScore = Math.max(...scores);
     const currentRank = attempts[0].rankEstimated; // Latest rank prediction
 
