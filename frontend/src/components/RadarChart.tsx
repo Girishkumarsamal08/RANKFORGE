@@ -57,7 +57,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
               key={levelIdx}
               points={gridPoints}
               fill="none"
-              stroke="#e4e4e7"
+              stroke="#242338"
               strokeWidth="1"
               strokeDasharray={level === 1 ? "none" : "3,3"}
             />
@@ -74,7 +74,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
               y1={center}
               x2={outerPoint.x}
               y2={outerPoint.y}
-              stroke="#e4e4e7"
+              stroke="#242338"
               strokeWidth="1"
             />
           );
@@ -96,7 +96,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
                 cx={p.x}
                 cy={p.y}
                 r="4"
-                fill="#ffffff"
+                fill="#09090b"
                 stroke="#3b58ff"
                 strokeWidth="2.5"
               />
@@ -117,7 +117,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
               textAnchor={anchor}
               fontSize="10"
               fontWeight="600"
-              fill="#71717a"
+              fill="#a1a1aa"
               className="select-none"
             >
               {item.topic}

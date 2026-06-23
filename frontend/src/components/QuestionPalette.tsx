@@ -18,8 +18,8 @@ export default function QuestionPalette({
   onSelectQuestion,
 }: QuestionPaletteProps) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-zinc-800 uppercase tracking-wider mb-4">
+    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-5 shadow-sm">
+      <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-4">
         Question Navigation
       </h3>
 
@@ -35,11 +35,11 @@ export default function QuestionPalette({
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-xl text-sm font-semibold border transition-all cursor-pointer",
                 isCurrent 
-                  ? "ring-2 ring-brand-500 border-brand-500 font-bold" 
+                  ? "ring-2 ring-brand-500 border-brand-500 font-bold bg-zinc-950 text-white" 
                   : "",
                 isAnswered
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                  : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                  ? "bg-emerald-950/30 text-emerald-400 border-emerald-900/40 hover:bg-emerald-900/30"
+                  : "bg-zinc-950/60 text-zinc-400 border-zinc-850 hover:bg-zinc-900/60"
               )}
             >
               {idx + 1}
@@ -49,18 +49,18 @@ export default function QuestionPalette({
       </div>
 
       {/* Palette Legend */}
-      <div className="mt-6 border-t border-zinc-100 pt-4 space-y-2 text-xs">
+      <div className="mt-6 border-t border-zinc-800 pt-4 space-y-2 text-xs">
         <div className="flex items-center gap-2">
-          <div className="h-4.5 w-4.5 rounded-lg bg-emerald-50 border border-emerald-200" />
-          <span className="text-zinc-600 font-medium">Answered / Saved</span>
+          <div className="h-4.5 w-4.5 rounded-lg bg-emerald-950/30 border border-emerald-900/40" />
+          <span className="text-zinc-400 font-medium">Answered / Saved</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4.5 w-4.5 rounded-lg bg-zinc-50 border border-zinc-200" />
-          <span className="text-zinc-600 font-medium">Unattempted</span>
+          <div className="h-4.5 w-4.5 rounded-lg bg-zinc-950/60 border border-zinc-850" />
+          <span className="text-zinc-400 font-medium">Unattempted</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4.5 w-4.5 rounded-lg border-2 border-brand-500 bg-white" />
-          <span className="text-zinc-600 font-medium">Current Active Question</span>
+          <div className="h-4.5 w-4.5 rounded-lg border-2 border-brand-500 bg-zinc-950" />
+          <span className="text-zinc-400 font-medium">Current Active Question</span>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ export class AuthController {
       const result = await authService.register(req.body);
       return res.status(201).json(result);
     } catch (error: any) {
-      res.status(400);
+      // Let the centralized error handler determine the right status code
       next(error);
     }
   }
@@ -19,7 +19,6 @@ export class AuthController {
       const result = await authService.login(req.body);
       return res.status(200).json(result);
     } catch (error: any) {
-      res.status(401);
       next(error);
     }
   }

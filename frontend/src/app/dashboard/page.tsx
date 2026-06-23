@@ -40,7 +40,7 @@ export default function DashboardPage() {
   if (!isAuthenticated || !user) return null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-transparent">
       <Navbar />
 
       <div className="flex flex-1">
@@ -50,17 +50,17 @@ export default function DashboardPage() {
           {/* Header section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white">
                 Welcome, {user.name}!
               </h1>
-              <p className="text-zinc-500 text-sm mt-1">
+              <p className="text-zinc-400 text-sm mt-1">
                 Here is your GATE preparation diagnostics overview.
               </p>
             </div>
             
             <button
               onClick={() => router.push('/tests/start')}
-              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-brand-100 transition hover:bg-brand-700 cursor-pointer w-fit"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-brand-900/20 transition hover:bg-brand-700 cursor-pointer w-fit"
             >
               <span>Attempt Mini-Mock</span>
               <ChevronRight className="h-4.5 w-4.5" />
@@ -70,14 +70,21 @@ export default function DashboardPage() {
           {isLoading ? (
             <div className="flex h-[400px] w-full items-center justify-center">
               <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-brand-600" />
-                <span className="text-sm font-semibold text-zinc-400">Loading analysis reports...</span>
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-800 border-t-brand-500" />
+                <span className="text-sm font-semibold text-zinc-500">Loading analysis reports...</span>
               </div>
             </div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-red-700">
-              <h3 className="font-bold text-lg">Error Fetching Dashboard Details</h3>
-              <p className="text-sm mt-1">Make sure both your Backend and AI engine containers are active.</p>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 text-center">
+              <AlertTriangle className="h-8 w-8 text-zinc-500 mx-auto mb-2" />
+              <h3 className="font-bold text-zinc-200 text-base">Analytics Loading</h3>
+              <p className="text-sm text-zinc-500 mt-1">Your dashboard analytics will appear here once the data pipeline is ready.</p>
+              <button
+                onClick={() => router.push('/tests/start')}
+                className="mt-4 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-700 cursor-pointer"
+              >
+                Take a Mock Test
+              </button>
             </div>
           ) : analytics ? (
             <div className="space-y-8 animate-fade-in">
@@ -113,9 +120,9 @@ export default function DashboardPage() {
               {/* Visualization Grid */}
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Pane - Radar Chart */}
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-7">
-                  <h3 className="text-base font-bold text-zinc-900 mb-2">Topic Accuracy Breakdown</h3>
-                  <p className="text-xs text-zinc-400 mb-6">Visual mapping of accuracy strengths in core GATE modules</p>
+                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-sm lg:col-span-7">
+                  <h3 className="text-base font-bold text-zinc-100 mb-2">Topic Accuracy Breakdown</h3>
+                  <p className="text-xs text-zinc-450 mb-6">Visual mapping of accuracy strengths in core GATE modules</p>
                   
                   <div className="flex items-center justify-center p-4">
                     <RadarChart 
@@ -131,19 +138,19 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-6 lg:col-span-5">
                   <RankMeter rank={analytics.stats.currentRank} />
                   
-                  {/* Quick Tips */}
-                  <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex-1">
+                  {/* Smart Score Insights */}
+                  <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-sm flex-1">
                     <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="h-5 w-5 text-amber-500" />
-                      <h4 className="font-bold text-zinc-900 text-sm">Smart Score Insights</h4>
+                      <Sparkles className="h-5 w-5 text-amber-400" />
+                      <h4 className="font-bold text-zinc-100 text-sm">Smart Score Insights</h4>
                     </div>
-                    <ul className="space-y-2 text-xs text-zinc-600 leading-normal">
+                    <ul className="space-y-2 text-xs text-zinc-400 leading-normal">
                       <li className="flex items-start gap-2">
-                        <span className="text-brand-600 font-bold">•</span>
+                        <span className="text-brand-400 font-bold">•</span>
                         <span>Answered questions correctly within 90 seconds are marked as <strong>High Fluidity</strong>.</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-brand-600 font-bold">•</span>
+                        <span className="text-brand-400 font-bold">•</span>
                         <span>Multiple tab switches during tests flags anti-cheat log alerts. Keep attempts clean!</span>
                       </li>
                     </ul>
@@ -152,19 +159,19 @@ export default function DashboardPage() {
               </div>
 
               {/* Weak Topics Analysis Table */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h3 className="text-base font-bold text-zinc-900 mb-1">Concept Vulnerabilities</h3>
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm">
+                <h3 className="text-base font-bold text-zinc-100 mb-1">Concept Vulnerabilities</h3>
                 <p className="text-xs text-zinc-400 mb-5">Ranked by accuracy and review priority</p>
 
                 {analytics.weakTopics.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-zinc-500 border border-dashed border-zinc-100 rounded-xl bg-zinc-50">
+                  <div className="text-center py-8 text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/40">
                     Attempt a test paper to load topic-wise diagnostics.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="border-b border-zinc-100 text-zinc-400 font-semibold uppercase tracking-wider">
+                        <tr className="border-b border-zinc-800 text-zinc-500 font-semibold uppercase tracking-wider">
                           <th className="pb-3">Subject / Module</th>
                           <th className="pb-3">Sub-Topic</th>
                           <th className="pb-3">Accuracy</th>
@@ -172,22 +179,22 @@ export default function DashboardPage() {
                           <th className="pb-3">Priority</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-zinc-50">
+                      <tbody className="divide-y divide-zinc-850">
                         {analytics.weakTopics.map((item, idx) => (
-                          <tr key={idx} className="text-zinc-700">
+                          <tr key={idx} className="text-zinc-300">
                             <td className="py-3.5 font-medium">{item.subject}</td>
-                            <td className="py-3.5 text-zinc-500">{item.topic}</td>
+                            <td className="py-3.5 text-zinc-400">{item.topic}</td>
                             <td className="py-3.5">
-                              <span className="font-semibold text-zinc-900">{Math.round(item.accuracy * 100)}%</span>
+                              <span className="font-semibold text-zinc-100">{Math.round(item.accuracy * 100)}%</span>
                             </td>
-                            <td className="py-3.5 text-zinc-500">{item.average_time_seconds} seconds</td>
+                            <td className="py-3.5 text-zinc-400">{item.average_time_seconds} seconds</td>
                             <td className="py-3.5">
                               <span className={`inline-flex rounded-lg px-2 py-1 text-[10px] font-bold border ${
                                 item.recommendation_priority === 'HIGH'
-                                  ? 'bg-red-50 text-red-700 border-red-200'
+                                  ? 'bg-red-950/20 text-red-400 border-red-900/40'
                                   : item.recommendation_priority === 'MEDIUM'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  ? 'bg-amber-950/20 text-amber-400 border-amber-900/40'
+                                  : 'bg-emerald-950/20 text-emerald-400 border-emerald-900/40'
                               }`}>
                                 {item.recommendation_priority}
                               </span>
@@ -201,19 +208,19 @@ export default function DashboardPage() {
               </div>
 
               {/* Actionable Recommendations Panel */}
-              <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-6 shadow-sm">
+              <div className="rounded-2xl border border-brand-900/30 bg-brand-950/15 p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5 text-brand-600" />
-                  <h3 className="text-base font-bold text-zinc-900">RAG AI Learning Recommendations</h3>
+                  <Sparkles className="h-5 w-5 text-brand-400" />
+                  <h3 className="text-base font-bold text-white">RAG AI Learning Recommendations</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {analytics.recommendations.map((rec, idx) => (
-                    <div key={idx} className="flex gap-3 rounded-xl bg-white p-4 border border-zinc-200/60 shadow-xs">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 text-xs font-bold">
+                    <div key={idx} className="flex gap-3 rounded-xl bg-zinc-900/50 p-4 border border-zinc-800/80 shadow-sm">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-950/40 text-brand-400 text-xs font-bold border border-brand-900/20">
                         {idx + 1}
                       </div>
-                      <p className="text-xs text-zinc-700 leading-relaxed font-medium">{rec}</p>
+                      <p className="text-xs text-zinc-300 leading-relaxed font-medium">{rec}</p>
                     </div>
                   ))}
                 </div>

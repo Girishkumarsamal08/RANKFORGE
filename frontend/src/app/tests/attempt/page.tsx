@@ -27,6 +27,7 @@ export default function TestAttemptPage() {
   );
 
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [natValue, setNatValue] = useState('');
   const [isFsActive, setIsFsActive] = useState(true);
 
@@ -93,9 +94,9 @@ export default function TestAttemptPage() {
             details: 'Tab switched or browser minimized during testing session.',
           });
         } catch (e) {
+          // Silently log — don't interrupt the user during demo
           console.error(e);
         }
-        alert('Warning: Tab switching is monitored. This event has been logged for evaluation.');
       }
     };
 
@@ -124,7 +125,6 @@ export default function TestAttemptPage() {
         } catch (e) {
           console.error(e);
         }
-        alert('Warning: Fullscreen mode is mandatory for this GATE mock. Exiting fullscreen has been logged.');
       }
     };
 
@@ -200,6 +200,7 @@ export default function TestAttemptPage() {
     }
 
     setSubmitting(true);
+    setSubmitError(null);
     try {
       // Map Redux answers map into standard server payload format
       const formattedAnswers = Object.keys(timesSpent).map((qId) => ({
@@ -217,19 +218,21 @@ export default function TestAttemptPage() {
       
       // Navigate to results report card
       router.push('/tests/results');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit test:', error);
-      alert('Error submitting answers. Verify backend connection.');
-      setSubmitting(false);
+      const msg = error.response?.data?.message || 'Submission encountered an issue.';
+      setSubmitError(msg);
+      // Still navigate to results after a brief delay — the history API will show the latest data
+      setTimeout(() => router.push('/tests/results'), 2000);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 select-none">
+    <div className="flex min-h-screen flex-col bg-transparent select-none">
       <Navbar />
 
       {!isFsActive && (
-        <div className="flex w-full items-center justify-between bg-amber-500 px-6 py-2 text-xs font-bold text-white border-b border-amber-600 animate-pulse">
+        <div className="flex w-full items-center justify-between bg-amber-600/90 backdrop-blur px-6 py-2 text-xs font-bold text-white border-b border-amber-800 animate-pulse">
           <span>Anti-Cheat Notice: Fullscreen mode is mandatory for this mock test.</span>
           <button
             onClick={triggerFullscreen}
@@ -240,21 +243,29 @@ export default function TestAttemptPage() {
         </div>
       )}
 
+      {/* Submit Error Banner */}
+      {submitError && (
+        <div className="flex w-full items-center gap-2 bg-red-950/30 border-b border-red-900/40 px-6 py-2 text-xs font-bold text-red-400">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{submitError} — Redirecting to results...</span>
+        </div>
+      )}
+
       {/* Test Workspace Header */}
-      <div className="flex h-14 w-full items-center justify-between border-b border-zinc-200 bg-white px-6">
+      <div className="flex h-14 w-full items-center justify-between border-b border-zinc-800 bg-zinc-950/80 backdrop-blur px-6">
         <div className="flex items-center gap-2">
-          <span className="rounded-lg bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 border border-brand-100">
+          <span className="rounded-lg bg-brand-500/10 px-2.5 py-1 text-xs font-bold text-brand-400 border border-brand-900/30">
             {currentQ.subject}
           </span>
-          <span className="text-xs font-medium text-zinc-400">/</span>
-          <span className="text-xs font-semibold text-zinc-600">{currentQ.topic}</span>
+          <span className="text-xs font-medium text-zinc-650">/</span>
+          <span className="text-xs font-semibold text-zinc-300">{currentQ.topic}</span>
         </div>
 
         <div className="flex items-center gap-4">
           <TestTimer initialSeconds={1800} onTimeout={() => handleSubmitTest(true)} />
           
           {cheatEventsCount > 0 && (
-            <div className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 border border-amber-200 animate-pulse">
+            <div className="flex items-center gap-1.5 rounded-lg bg-amber-950/30 px-3 py-1.5 text-xs font-bold text-amber-400 border border-amber-900/40 animate-pulse">
               <AlertCircle className="h-4 w-4" />
               <span>Warnings: {cheatEventsCount}</span>
             </div>
@@ -265,20 +276,20 @@ export default function TestAttemptPage() {
       <div className="flex flex-1">
         {/* Left Side: Question Pane */}
         <main className="flex-1 p-6 md:p-8">
-          <div className="flex h-full flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm min-h-[450px]">
+          <div className="flex h-full flex-col justify-between rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm min-h-[450px]">
             <div>
               {/* Question Meta */}
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-6">
-                <span className="text-sm font-bold text-zinc-500">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
+                <span className="text-sm font-bold text-zinc-400">
                   Question {currentQuestionIndex + 1}
                 </span>
-                <span className="rounded-lg bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                <span className="rounded-lg bg-zinc-800 px-2 py-1 text-[10px] font-bold text-zinc-300 uppercase tracking-wider">
                   Type: {currentQ.type}
                 </span>
               </div>
 
               {/* Question Content */}
-              <h2 className="text-base md:text-lg font-semibold text-zinc-900 leading-relaxed mb-8">
+              <h2 className="text-base md:text-lg font-semibold text-white leading-relaxed mb-8">
                 {currentQ.text}
               </h2>
 
@@ -294,12 +305,12 @@ export default function TestAttemptPage() {
                         onClick={() => handleSelectOption(idx)}
                         className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left text-sm font-medium transition cursor-pointer ${
                           isSelected
-                            ? 'border-brand-500 bg-brand-50/50 text-brand-700 font-semibold'
-                            : 'border-zinc-100 bg-zinc-50/20 hover:border-zinc-300'
+                            ? 'border-brand-500 bg-brand-500/10 text-brand-300 font-semibold'
+                            : 'border-zinc-800 bg-zinc-950/30 hover:border-zinc-700 hover:bg-zinc-950/50 text-zinc-350'
                         }`}
                       >
                         <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
-                          isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-zinc-300 text-zinc-500'
+                          isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-zinc-700 text-zinc-450'
                         }`}>
                           {String.fromCharCode(65 + idx)}
                         </div>
@@ -320,15 +331,15 @@ export default function TestAttemptPage() {
                         onClick={() => handleSelectCheckbox(idx)}
                         className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left text-sm font-medium transition cursor-pointer ${
                           isSelected
-                            ? 'border-brand-500 bg-brand-50/50 text-brand-700 font-semibold'
-                            : 'border-zinc-100 bg-zinc-50/20 hover:border-zinc-300'
+                            ? 'border-brand-500 bg-brand-500/10 text-brand-300 font-semibold'
+                            : 'border-zinc-800 bg-zinc-950/30 hover:border-zinc-700 hover:bg-zinc-950/50 text-zinc-350'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={isSelected}
                           readOnly
-                          className="h-4.5 w-4.5 rounded text-brand-600 border-zinc-300"
+                          className="h-4.5 w-4.5 rounded text-brand-500 border-zinc-700 bg-zinc-950"
                         />
                         <span>{opt}</span>
                       </button>
@@ -338,7 +349,7 @@ export default function TestAttemptPage() {
 
                 {currentQ.type === 'NAT' && (
                   <div className="space-y-3">
-                    <span className="text-xs text-zinc-400 font-medium leading-none">Enter your numerical answer:</span>
+                    <span className="text-xs text-zinc-450 font-medium leading-none">Enter your numerical answer:</span>
                     <div className="flex gap-2 max-w-sm">
                       <input
                         type="number"
@@ -346,11 +357,11 @@ export default function TestAttemptPage() {
                         value={natValue}
                         onChange={(e) => setNatValue(e.target.value)}
                         placeholder="0.00"
-                        className="rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-brand-500 focus:bg-white"
+                        className="rounded-xl border border-zinc-800 bg-zinc-950/60 text-white px-4 py-2.5 text-sm font-semibold outline-none transition focus:border-brand-500 focus:bg-zinc-900"
                       />
                       <button
                         onClick={handleSaveNat}
-                        className="flex items-center gap-1.5 rounded-xl bg-zinc-800 px-4 text-xs font-bold text-white transition hover:bg-zinc-950 cursor-pointer"
+                        className="flex items-center gap-1.5 rounded-xl bg-zinc-800 px-4 text-xs font-bold text-white transition hover:bg-zinc-700 cursor-pointer"
                       >
                         <Save className="h-4 w-4" />
                         <span>Save</span>
@@ -362,19 +373,19 @@ export default function TestAttemptPage() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex items-center justify-between border-t border-zinc-100 pt-6 mt-10">
+            <div className="flex items-center justify-between border-t border-zinc-800 pt-6 mt-10">
               <div className="flex gap-2">
                 <button
                   disabled={currentQuestionIndex === 0}
                   onClick={() => dispatch(setCurrentQuestionIndex(currentQuestionIndex - 1))}
-                  className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-xs font-bold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-50 cursor-pointer"
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 px-4 py-2.5 text-xs font-bold transition hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
                 >
                   Previous
                 </button>
                 <button
                   disabled={currentQuestionIndex === questions.length - 1}
                   onClick={() => dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1))}
-                  className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-xs font-bold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-50 cursor-pointer"
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 px-4 py-2.5 text-xs font-bold transition hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
                 >
                   Next
                 </button>
@@ -382,7 +393,7 @@ export default function TestAttemptPage() {
 
               <button
                 onClick={handleClear}
-                className="rounded-xl border border-dashed border-red-200 bg-red-50/20 px-4.5 py-2.5 text-xs font-bold text-red-600 transition hover:bg-red-50 hover:border-red-300 cursor-pointer"
+                className="rounded-xl border border-dashed border-red-900/40 bg-red-950/20 px-4.5 py-2.5 text-xs font-bold text-red-400 transition hover:bg-red-950/40 hover:border-red-900/60 cursor-pointer"
               >
                 Clear Response
               </button>
@@ -391,7 +402,7 @@ export default function TestAttemptPage() {
         </main>
 
         {/* Right Side: Sidebar Navigation Palette */}
-        <aside className="w-80 border-l border-zinc-200 bg-white p-6 flex flex-col justify-between h-[calc(100vh-3.5rem-4rem)]">
+        <aside className="w-80 border-l border-zinc-800 bg-zinc-950/60 p-6 flex flex-col justify-between h-[calc(100vh-3.5rem-4rem)]">
           <QuestionPalette
             questions={questions}
             currentQuestionIndex={currentQuestionIndex}
@@ -402,7 +413,7 @@ export default function TestAttemptPage() {
           <button
             onClick={() => handleSubmitTest(false)}
             disabled={submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-red-100 transition hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 transition hover:bg-red-700 disabled:opacity-50 cursor-pointer"
           >
             <Square className="h-4.5 w-4.5 shrink-0" />
             <span>{submitting ? 'Submitting attempt...' : 'Finish & Submit Test'}</span>

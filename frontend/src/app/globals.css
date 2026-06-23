@@ -3,14 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --background: #fafafa;
-  --foreground: #09090b;
-  --border: #e4e4e7;
+  --background: #050508;
+  --foreground: #f4f4f5;
+  --border: #1d1c2d;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--background);
+  background-image: radial-gradient(circle at 50% -20%, #15103c 0%, #050508 85%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Premium Dark Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1c33;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b274c;
 }

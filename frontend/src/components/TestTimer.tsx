@@ -44,8 +44,8 @@ export default function TestTimer({ initialSeconds, onTimeout, onTick }: TestTim
     <div className={cn(
       "flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition",
       isLowTime
-        ? "bg-red-50 text-red-600 border-red-200 animate-pulse"
-        : "bg-zinc-50 text-zinc-700 border-zinc-200"
+        ? "bg-red-950/30 text-red-400 border-red-900/50 animate-pulse"
+        : "bg-zinc-900/80 text-zinc-300 border-zinc-800"
     )}>
       <Clock className="h-4 w-4" />
       <span>Time Remaining:</span>
