@@ -1,0 +1,92 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String        @id @default(uuid())
+  email     String        @unique
+  password  String
+  name      String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  attempts  TestAttempt[]
+}
+
+model Exam {
+  id        String        @id @default(uuid())
+  title     String
+  code      String        @unique
+  subjects  Subject[]
+  attempts  TestAttempt[]
+}
+
+model Subject {
+  id        String     @id @default(uuid())
+  name      String
+  examId    String
+  exam      Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+  topics    Topic[]
+  questions Question[]
+}
+
+model Topic {
+  id        String     @id @default(uuid())
+  name      String
+  subjectId String
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id           String       @id @default(uuid())
+  text         String
+  type         String       // MCQ, MSQ, NAT
+  options      String[]     // MCQ/MSQ option labels
+  correctAnswer String      // Correct response representation (e.g. index list or exact float)
+  explanation  String?
+  subjectId    String
+  subject      Subject      @relation(fields: [subjectId], references: [id])
+  topicId      String
+  topic        Topic        @relation(fields: [topicId], references: [id])
+  userAnswers  UserAnswer[]
+}
+
+model TestAttempt {
+  id            String         @id @default(uuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examId        String
+  exam          Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
+  score         Float?
+  rankEstimated Int?
+  status        String         @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, SUSPENDED
+  startTime     DateTime       @default(now())
+  endTime       DateTime?
+  userAnswers   UserAnswer[]
+  antiCheatLogs AntiCheatLog[]
+}
+
+model UserAnswer {
+  id               String      @id @default(uuid())
+  attemptId        String
+  attempt          TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerSelected   String      // User answer representation
+  isCorrect        Boolean
+  timeSpentSeconds Int
+}
+
+model AntiCheatLog {
+  id         String      @id @default(uuid())
+  attemptId  String
+  attempt    TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  eventType  String      // TAB_SWITCH, FULLSCREEN_EXIT, FACE_LOST
+  timestamp  DateTime    @default(now())
+  details    String?
+}

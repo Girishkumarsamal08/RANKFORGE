@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: rankforge_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: rankforge_user
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: rankforge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rankforge_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: rankforge_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - rankforge_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rankforge_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - DATABASE_URL=postgresql://rankforge_user:securepassword@postgres:5432/rankforge_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_jwt_super_secret_key_change_me
+      - JWT_EXPIRES_IN=7d
+      - AI_ENGINE_URL=http://ai-engine:8000
+      - NODE_ENV=development
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - rankforge_network
+
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    container_name: rankforge_ai_engine
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    networks:
+      - rankforge_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rankforge_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+    networks:
+      - rankforge_network
+
+volumes:
+  postgres_data:
+
+networks:
+  rankforge_network:
+    driver: bridge
