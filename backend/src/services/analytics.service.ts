@@ -64,12 +64,12 @@ export class AnalyticsService {
 
     // 3. Aggregate statistics
     const totalTests = attempts.length;
-    const scores = attempts.map(a => a.score || 0);
+    const scores = attempts.map((a: any) => a.score || 0);
     const avgScore = parseFloat((scores.reduce((a: number, b: number) => a + b, 0) / totalTests).toFixed(2));
     const maxScore = Math.max(...scores);
-    const currentRank = attempts[0].rankEstimated; // Latest rank prediction
+    const currentRank = (attempts[0] as any).rankEstimated; // Latest rank prediction
 
-    const recentScores = attempts.slice(0, 5).map(a => ({
+    const recentScores = attempts.slice(0, 5).map((a: any) => ({
       attemptId: a.id,
       examCode: a.exam.code,
       score: a.score,
@@ -79,8 +79,8 @@ export class AnalyticsService {
 
     // Gather all question answers to feed into the AI Engine
     const answersPayload: any[] = [];
-    attempts.forEach(attempt => {
-      attempt.userAnswers.forEach(ua => {
+    attempts.forEach((attempt: any) => {
+      attempt.userAnswers.forEach((ua: any) => {
         answersPayload.push({
           subject: ua.question.subject.name,
           topic: ua.question.topic.name,
