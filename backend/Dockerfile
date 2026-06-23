@@ -1,5 +1,6 @@
 # Build stage
 FROM node:18-slim AS builder
+RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -10,6 +11,7 @@ RUN npx prisma generate
 
 # Production stage
 FROM node:18-slim AS runner
+RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/package*.json ./
