@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { authApi } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import Navbar from '../../components/Navbar';
-import { GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
+import { GraduationCap, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,13 +84,26 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm placeholder-zinc-400 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 pl-4 pr-11 py-3 text-sm placeholder-zinc-400 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-450 hover:text-zinc-600 transition outline-none cursor-pointer"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4.5 w-4.5 text-zinc-400" />
+                  ) : (
+                    <Eye className="h-4.5 w-4.5 text-zinc-400" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
