@@ -91,7 +91,7 @@ export class AnalyticsService {
     });
 
     // 4. Query FastAPI AI Engine for Weak Topics and Recommendations
-    let aiAnalysis = { weak_topics: [], recommendations: [] };
+    let aiAnalysis: { weak_topics: any[]; recommendations: string[] } = { weak_topics: [], recommendations: [] };
     try {
       const response = await axios.post(`${AI_ENGINE_URL}/api/weak-topics`, {
         branch: attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS',
