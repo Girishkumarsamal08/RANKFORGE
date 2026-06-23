@@ -23,6 +23,18 @@ export default function StartTestPage() {
   }, [isAuthenticated, router]);
 
   const handleStartExam = async () => {
+    // Request fullscreen mode first
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        throw new Error('Fullscreen API not supported by browser.');
+      }
+    } catch (err) {
+      alert('Fullscreen mode is mandatory to start the mock test. Please allow fullscreen permission.');
+      return;
+    }
+
     setLoading(true);
     try {
       // Initialize GATE CS mock test
@@ -36,9 +48,14 @@ export default function StartTestPage() {
 
       // Direct to active attempt page
       router.push('/tests/attempt');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to initiate mock test:', error);
-      alert('Error connecting to Server. Verify backend containers are running.');
+      const msg = error.response?.data?.message || 'Error connecting to Server. Verify backend containers are running.';
+      alert(msg);
+      // Exit fullscreen if exam initialization failed
+      if (document.fullscreenElement) {
+        await document.exitFullscreen().catch(() => {});
+      }
     } finally {
       setLoading(false);
     }

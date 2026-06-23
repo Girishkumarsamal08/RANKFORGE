@@ -37,7 +37,11 @@ export interface TestAttempt {
   examId: string;
   score: number | null;
   rankEstimated: number | null;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'SUSPENDED';
+  percentile: number | null;
+  credibilityScore: number;
+  violationsCount: number;
+  durationSeconds: number;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'SUSPENDED' | 'SUBMITTED';
   startTime: string;
   endTime: string | null;
   exam?: Exam;

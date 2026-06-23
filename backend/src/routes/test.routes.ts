@@ -9,5 +9,6 @@ router.post('/start', protect, testController.start);
 router.post('/submit', protect, testController.submit);
 router.get('/history', protect, testController.getHistory);
 router.post('/cheat-log', protect, testController.logCheat);
+router.get('/attempt/:attemptId/time', protect, testController.getRemainingTime);
 
 export default router;

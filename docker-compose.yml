@@ -64,13 +64,13 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+        - NEXT_PUBLIC_API_URL=https://lucky-signs-tan.loca.lt/api
     container_name: rankforge_frontend
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+      - NEXT_PUBLIC_API_URL=https://lucky-signs-tan.loca.lt/api
     depends_on:
       - backend
     networks:

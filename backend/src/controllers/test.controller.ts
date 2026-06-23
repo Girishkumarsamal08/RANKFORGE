@@ -53,13 +53,29 @@ export class TestController {
 
   async logCheat(req: Request, res: Response, next: NextFunction) {
     try {
-      const { attemptId, eventType, details } = req.body;
+      const { attemptId, eventType, details, answers } = req.body;
       if (!attemptId || !eventType) {
         return res.status(400).json({ message: 'attemptId and eventType are required' });
       }
 
-      const log = await testService.logCheatEvent(attemptId, eventType, details);
+      const userId = req.user?.id;
+
+      const log = await testService.logCheatEvent(attemptId, eventType, details, userId, answers);
       return res.status(201).json(log);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async getRemainingTime(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { attemptId } = req.params;
+      if (!attemptId) {
+        return res.status(400).json({ message: 'attemptId is required' });
+      }
+
+      const result = await testService.getRemainingTime(attemptId);
+      return res.status(200).json(result);
     } catch (error: any) {
       next(error);
     }

@@ -23,6 +23,21 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor for automatic signout on session invalidation
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('rankforge_token');
+        localStorage.removeItem('rankforge_user');
+        window.location.href = '/login?reason=session_invalidated';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // --- Auth Endpoints ---
 export const authApi = {
   login: async (payload: any) => {
@@ -53,8 +68,12 @@ export const testsApi = {
     const { data } = await api.get('/tests/history');
     return data;
   },
-  logCheat: async (payload: { attemptId: string; eventType: string; details?: string }) => {
+  logCheat: async (payload: { attemptId: string; eventType: string; details?: string; answers?: any[] }) => {
     const { data } = await api.post('/tests/cheat-log', payload);
+    return data;
+  },
+  getRemainingTime: async (attemptId: string) => {
+    const { data } = await api.get(`/tests/attempt/${attemptId}/time`);
     return data;
   },
 };

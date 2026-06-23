@@ -31,6 +31,55 @@ export default function TestAttemptPage() {
   const [natValue, setNatValue] = useState('');
   const [isFsActive, setIsFsActive] = useState(true);
 
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [serverViolationsCount, setServerViolationsCount] = useState(0);
+  const [serverCredibilityScore, setServerCredibilityScore] = useState(100);
+
+  const handleViolation = async (eventType: string, details: string) => {
+    if (submitting || !attemptId) return;
+
+    // Map Redux answers map into standard server payload format
+    const formattedAnswers = Object.keys(timesSpent).map((qId) => ({
+      questionId: qId,
+      answerSelected: answers[qId] || '',
+      timeSpentSeconds: timesSpent[qId] || 0,
+    }));
+
+    try {
+      const response = await testsApi.logCheat({
+        attemptId,
+        eventType,
+        details,
+        answers: formattedAnswers,
+      });
+
+      const { autoSubmitted, violationsCount, credibilityScore } = response;
+      setServerViolationsCount(violationsCount);
+      setServerCredibilityScore(credibilityScore);
+
+      if (autoSubmitted) {
+        setWarningMessage('Critical security violation! You have exceeded the maximum of 3 violations. Your test attempt is being automatically submitted.');
+        setShowWarningModal(true);
+        setSubmitting(true);
+        setTimeout(() => {
+          router.push('/tests/results');
+        }, 3000);
+      } else {
+        if (violationsCount === 1) {
+          setWarningMessage(`Warning: ${details} This is violation 1 of 3. Please maintain fullscreen and browser focus.`);
+          setShowWarningModal(true);
+        } else if (violationsCount === 2) {
+          setWarningMessage(`Final Warning: ${details} This is violation 2 of 3. One more violation will cause automatic submission of your test.`);
+          setShowWarningModal(true);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to log cheat event:', e);
+    }
+  };
+
   // Fullscreen state checker
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -87,58 +136,21 @@ export default function TestAttemptPage() {
       if (document.hidden) {
         dispatch(incrementCheatCount());
         console.warn('User switched tabs during active mock test attempt.');
-        try {
-          await testsApi.logCheat({
-            attemptId,
-            eventType: 'TAB_SWITCH',
-            details: 'Tab switched or browser minimized during testing session.',
-          });
-        } catch (e) {
-          // Silently log — don't interrupt the user during demo
-          console.error(e);
-        }
+        await handleViolation('TAB_SWITCH', 'Tab switched or browser minimized during testing session.');
       }
     };
 
     const handleWindowBlur = async () => {
       dispatch(incrementCheatCount());
-      try {
-        await testsApi.logCheat({
-          attemptId,
-          eventType: 'FOCUS_LOST',
-          details: 'Window lost focus (clicked on desktop/other app).',
-        });
-      } catch (e) {
-        console.error(e);
-      }
+      await handleViolation('WINDOW_BLUR', 'Window lost focus (clicked on desktop/other app).');
     };
 
     const handleFullscreenChange = async () => {
       if (!document.fullscreenElement) {
         dispatch(incrementCheatCount());
-        try {
-          await testsApi.logCheat({
-            attemptId,
-            eventType: 'FULLSCREEN_EXIT',
-            details: 'User exited fullscreen mode during the active attempt.',
-          });
-        } catch (e) {
-          console.error(e);
-        }
+        await handleViolation('FULLSCREEN_EXIT', 'User exited fullscreen mode during the active attempt.');
       }
     };
-
-    // Try to request fullscreen on mount (best effort)
-    const requestFs = async () => {
-      try {
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen();
-        }
-      } catch (err) {
-        console.log('Programmatic fullscreen request blocked. Needs user click.', err);
-      }
-    };
-    requestFs();
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
@@ -148,12 +160,38 @@ export default function TestAttemptPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      // Clean up fullscreen mode when leaving the test
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
     };
-  }, [attemptId, dispatch]);
+  }, [attemptId, answers, timesSpent, submitting]);
+
+  // 4. Fetch initial remaining time from server and synchronize periodically
+  useEffect(() => {
+    if (!attemptId) return;
+
+    const syncTime = async () => {
+      try {
+        const response = await testsApi.getRemainingTime(attemptId);
+        if (response.isExpired) {
+          setSubmitting(true);
+          alert('Your test duration has expired. Redirecting to results.');
+          router.push('/tests/results');
+        } else {
+          setSecondsRemaining(response.remainingSeconds);
+        }
+      } catch (err: any) {
+        console.error('Failed to sync remaining time:', err);
+      }
+    };
+
+    syncTime();
+
+    // Periodically sync time with server every 15 seconds
+    const syncInterval = setInterval(syncTime, 15000);
+
+    return () => clearInterval(syncInterval);
+  }, [attemptId, router]);
 
   if (!attemptId || questions.length === 0) return null;
 
@@ -262,12 +300,12 @@ export default function TestAttemptPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <TestTimer initialSeconds={1800} onTimeout={() => handleSubmitTest(true)} />
+          <TestTimer initialSeconds={secondsRemaining !== null ? secondsRemaining : 1800} onTimeout={() => handleSubmitTest(true)} />
           
-          {cheatEventsCount > 0 && (
+          {serverViolationsCount > 0 && (
             <div className="flex items-center gap-1.5 rounded-lg bg-amber-950/30 px-3 py-1.5 text-xs font-bold text-amber-400 border border-amber-900/40 animate-pulse">
               <AlertCircle className="h-4 w-4" />
-              <span>Warnings: {cheatEventsCount}</span>
+              <span>Warnings: {serverViolationsCount}</span>
             </div>
           )}
         </div>
@@ -420,6 +458,45 @@ export default function TestAttemptPage() {
           </button>
         </aside>
       </div>
+
+      {/* Warning Modal */}
+      {showWarningModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-center">
+            <div className="flex items-center justify-center gap-3 text-red-500 mb-4">
+              <AlertCircle className="h-8 w-8 animate-bounce" />
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Security Violation Detected</h3>
+            </div>
+            
+            <p className="text-sm text-zinc-300 leading-relaxed mb-6">
+              {warningMessage}
+            </p>
+
+            <div className="flex flex-col gap-2 rounded-xl bg-zinc-900/60 p-4 border border-zinc-800 mb-6 text-xs text-zinc-400">
+              <div className="flex justify-between">
+                <span>Violations Count:</span>
+                <span className="font-bold text-red-400">{serverViolationsCount} / 3</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Credibility Score:</span>
+                <span className="font-bold text-brand-400">{serverCredibilityScore} %</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowWarningModal(false);
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen().catch(() => {});
+                }
+              }}
+              className="w-full rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700 active:scale-98 shadow-lg shadow-red-900/20 cursor-pointer text-center"
+            >
+              I Understand & Resume Test
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

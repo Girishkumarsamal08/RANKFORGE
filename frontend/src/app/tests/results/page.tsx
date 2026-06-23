@@ -39,6 +39,12 @@ export default function ResultsPage() {
 
   const latestAttempt = history && history.length > 0 ? history[0] : null;
 
+  const getConfidenceLevel = (score: number) => {
+    if (score >= 90) return { label: 'High', color: 'text-emerald-400' };
+    if (score >= 70) return { label: 'Medium', color: 'text-amber-400' };
+    return { label: 'Low', color: 'text-red-400' };
+  };
+
   // Compute test duration
   const getDuration = (attempt: TestAttempt) => {
     if (!attempt.endTime) return 'N/A';
@@ -93,6 +99,19 @@ export default function ResultsPage() {
             <div className="space-y-6 animate-fade-in">
               {/* Score Highlight Box */}
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 shadow-sm text-center">
+                
+                {latestAttempt.status === 'SUBMITTED' && (latestAttempt.violationsCount ?? 0) >= 3 && (
+                  <div className="mb-6 rounded-xl border border-red-500/20 bg-red-950/15 p-4 flex gap-3 text-left text-xs text-red-400">
+                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5 animate-pulse" />
+                    <div>
+                      <strong className="text-red-200 text-sm block mb-1">Test Automatically Submitted</strong>
+                      <p className="leading-relaxed">
+                        This attempt was automatically submitted by the system because you exceeded the limit of 3 security violations (tab switching, fullscreen exiting, or losing window focus).
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Latest Performance Score</span>
                 
                 <div className="flex items-baseline justify-center gap-1.5 mt-2">
@@ -104,22 +123,55 @@ export default function ResultsPage() {
 
                 <p className="text-xs text-zinc-500 mt-1.5">Marks compiled using standard GATE marking schemes</p>
 
-                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-zinc-800 pt-6">
-                  <div>
+                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-zinc-800 pt-6 text-center">
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Estimated AIR</span>
-                    <p className="text-xl font-bold text-white mt-1">
+                    <p className="text-xl font-extrabold text-white mt-1">
                       {latestAttempt.rankEstimated ? `#${latestAttempt.rankEstimated}` : 'N/A'}
                     </p>
                   </div>
-                  <div>
+                  
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase">Percentile</span>
+                    <p className="text-xl font-extrabold text-white mt-1">
+                      {latestAttempt.percentile !== null ? `${latestAttempt.percentile}%` : 'N/A'}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Time Elapsed</span>
                     <p className="text-xl font-bold text-white mt-1">{getDuration(latestAttempt)}</p>
                   </div>
-                  <div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Attempt Status</span>
-                    <p className="text-xl font-bold text-emerald-400 mt-1">{latestAttempt.status}</p>
+                    <p className={`text-xl font-bold mt-1 ${latestAttempt.status === 'SUBMITTED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {latestAttempt.status}
+                    </p>
                   </div>
-                  <div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase">Violations Count</span>
+                    <p className={`text-xl font-extrabold mt-1 ${latestAttempt.violationsCount >= 2 ? 'text-red-400' : latestAttempt.violationsCount === 1 ? 'text-amber-400' : 'text-zinc-300'}`}>
+                      {latestAttempt.violationsCount ?? 0} / 3
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase">Credibility Score</span>
+                    <p className={`text-xl font-extrabold mt-1 ${(latestAttempt.credibilityScore ?? 100) >= 90 ? 'text-emerald-400' : (latestAttempt.credibilityScore ?? 100) >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                      {latestAttempt.credibilityScore ?? 100} %
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase">Confidence Level</span>
+                    <p className={`text-xl font-extrabold mt-1 ${getConfidenceLevel(latestAttempt.credibilityScore ?? 100).color}`}>
+                      {getConfidenceLevel(latestAttempt.credibilityScore ?? 100).label}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Exam Code</span>
                     <p className="text-xl font-bold text-white mt-1">{latestAttempt.exam?.code.toUpperCase()}</p>
                   </div>

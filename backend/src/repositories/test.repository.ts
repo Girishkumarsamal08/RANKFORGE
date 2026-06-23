@@ -84,12 +84,21 @@ export class TestRepository {
     });
   }
 
-  async createAntiCheatLog(attemptId: string, eventType: string, details?: string): Promise<AntiCheatLog> {
+  async createAntiCheatLog(attemptId: string | null, eventType: string, details?: string, userId?: string): Promise<AntiCheatLog> {
+    let finalUserId = userId;
+    if (!finalUserId && attemptId) {
+      const attempt = await prisma.testAttempt.findUnique({ where: { id: attemptId } });
+      if (attempt) {
+        finalUserId = attempt.userId;
+      }
+    }
+
     return prisma.antiCheatLog.create({
       data: {
         attemptId,
+        userId: finalUserId || '',
         eventType,
-        details,
+        metadata: details,
       },
     });
   }

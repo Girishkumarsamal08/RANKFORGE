@@ -1,26 +1,43 @@
 import { TestRepository } from '../repositories/test.repository';
 import prisma from '../config/db';
 import axios from 'axios';
+import redisClient from '../config/redis';
 
 const testRepository = new TestRepository();
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:8000';
 
 export class TestService {
   async startTest(userId: string, examCode: string) {
-    // 1. Get or create exam
+    // 1. Redis active session locking check
+    const activeAttemptId = await redisClient.get(`user:${userId}:active_attempt`);
+    if (activeAttemptId) {
+      throw new Error('You already have an active test session running');
+    }
+
+    // 2. Get or create exam
     const examTitle = examCode.replace('-', ' ').toUpperCase();
     const exam = await testRepository.getFirstOrCreateExam(examCode, examTitle);
 
-    // 2. Check if we need to seed starter questions for this exam
+    // 3. Check if we need to seed starter questions for this exam
     const existingQuestions = await testRepository.getQuestionsByExam(exam.id);
     if (existingQuestions.length === 0) {
       await this.seedExamData(exam.id);
     }
 
-    // 3. Create test attempt
+    // 4. Create test attempt
     const attempt = await testRepository.createAttempt(userId, exam.id);
 
-    // 4. Retrieve questions to serve the user
+    // 5. Store Redis attempt active metadata and locks
+    const startedAt = attempt.startTime.toISOString();
+    await redisClient.set(`attempt:${attempt.id}:active`, JSON.stringify({
+      userId,
+      attemptId: attempt.id,
+      startedAt
+    }));
+    await redisClient.set(`user:${userId}:active_attempt`, attempt.id);
+    await redisClient.set(`attempt:${attempt.id}:violations`, '0');
+
+    // 6. Retrieve questions to serve the user
     const questions = await testRepository.getQuestionsByExam(exam.id);
 
     return {
@@ -39,26 +56,40 @@ export class TestService {
         topic: q.topic.name,
       })),
       startTime: attempt.startTime,
+      durationSeconds: attempt.durationSeconds,
     };
   }
 
   async submitTest(
     attemptId: string, 
-    answers: Array<{ questionId: string; answerSelected: string; timeSpentSeconds: number }>,
-    antiCheatLogs?: Array<{ eventType: string; details?: string }>
+    answers: Array<{ questionId: string; answerSelected: string; timeSpentSeconds: number }> = [],
+    antiCheatLogs?: Array<{ eventType: string; details?: string }>,
+    status: string = 'COMPLETED'
   ) {
     const attempt = await testRepository.findAttemptById(attemptId);
     if (!attempt) {
       throw new Error('Test attempt not found');
     }
-    if (attempt.status === 'COMPLETED') {
-      throw new Error('Test already submitted');
+    if (attempt.status === 'COMPLETED' || attempt.status === 'SUBMITTED') {
+      return {
+        attemptId: attempt.id,
+        score: attempt.score,
+        rankEstimated: attempt.rankEstimated,
+        status: attempt.status,
+        startTime: attempt.startTime,
+        endTime: attempt.endTime
+      };
     }
+
+    // Release Redis session locks
+    await redisClient.del(`attempt:${attemptId}:active`);
+    await redisClient.del(`user:${attempt.userId}:active_attempt`);
+    await redisClient.del(`attempt:${attemptId}:violations`);
 
     // 1. Save anti-cheat logs
     if (antiCheatLogs && antiCheatLogs.length > 0) {
       for (const log of antiCheatLogs) {
-        await testRepository.createAntiCheatLog(attemptId, log.eventType, log.details);
+        await testRepository.createAntiCheatLog(attemptId, log.eventType, log.details, attempt.userId);
       }
     }
 
@@ -77,67 +108,56 @@ export class TestService {
 
     let totalScore = 0;
     const userAnswersToSave = [];
-    const aiAnswerPayload = [];
 
     // 3. Calculate scores
-    for (const ans of answers) {
-      const q = dbQuestions.find(dq => dq.id === ans.questionId);
-      if (!q) continue;
+    if (answers && answers.length > 0) {
+      for (const ans of answers) {
+        const q = dbQuestions.find(dq => dq.id === ans.questionId);
+        if (!q) continue;
 
-      // GATE scoring logic:
-      // MCQ: 1 or 2 marks, 1/3 negative marking (e.g. if incorrect, lose 0.33 or 0.66)
-      // MSQ: 1 or 2 marks, no negative marking
-      // NAT: 1 or 2 marks, no negative marking
-      // Assume 2 marks questions for simplicity
-      const marks = 2.0;
-      let isCorrect = false;
+        const marks = 2.0;
+        let isCorrect = false;
 
-      if (q.type === 'MCQ') {
-        isCorrect = q.correctAnswer.trim() === ans.answerSelected.trim();
-        if (isCorrect) {
-          totalScore += marks;
-        } else {
-          totalScore -= (marks / 3.0); // 1/3 negative
+        if (q.type === 'MCQ') {
+          isCorrect = q.correctAnswer.trim() === ans.answerSelected.trim();
+          if (isCorrect) {
+            totalScore += marks;
+          } else {
+            totalScore -= (marks / 3.0); // 1/3 negative
+          }
+        } else if (q.type === 'MSQ') {
+          const correctKeys = q.correctAnswer.split(',').sort().join(',');
+          const selectedKeys = ans.answerSelected.split(',').sort().join(',');
+          isCorrect = correctKeys === selectedKeys;
+          if (isCorrect) {
+            totalScore += marks;
+          }
+        } else if (q.type === 'NAT') {
+          const corrVal = parseFloat(q.correctAnswer);
+          const userVal = parseFloat(ans.answerSelected);
+          isCorrect = !isNaN(corrVal) && !isNaN(userVal) && Math.abs(corrVal - userVal) < 0.01;
+          if (isCorrect) {
+            totalScore += marks;
+          }
         }
-      } else if (q.type === 'MSQ') {
-        // MSQ has multiple selection keys separated by commas, e.g. "0,2"
-        const correctKeys = q.correctAnswer.split(',').sort().join(',');
-        const selectedKeys = ans.answerSelected.split(',').sort().join(',');
-        isCorrect = correctKeys === selectedKeys;
-        if (isCorrect) {
-          totalScore += marks;
-        }
-      } else if (q.type === 'NAT') {
-        // NAT answers are numbers or floats. Allow loose float comparison
-        const corrVal = parseFloat(q.correctAnswer);
-        const userVal = parseFloat(ans.answerSelected);
-        isCorrect = !isNaN(corrVal) && !isNaN(userVal) && Math.abs(corrVal - userVal) < 0.01;
-        if (isCorrect) {
-          totalScore += marks;
-        }
+
+        userAnswersToSave.push({
+          attemptId,
+          questionId: q.id,
+          answerSelected: ans.answerSelected,
+          isCorrect,
+          timeSpentSeconds: ans.timeSpentSeconds
+        });
       }
-
-      userAnswersToSave.push({
-        attemptId,
-        questionId: q.id,
-        answerSelected: ans.answerSelected,
-        isCorrect,
-        timeSpentSeconds: ans.timeSpentSeconds
-      });
-
-      aiAnswerPayload.push({
-        subject: q.subject.name,
-        topic: q.topic.name,
-        is_correct: isCorrect,
-        time_spent_seconds: ans.timeSpentSeconds
-      });
     }
 
     // Ensure score is not negative
     totalScore = Math.max(0, parseFloat(totalScore.toFixed(2)));
 
     // 4. Save Answers to DB
-    await testRepository.createUserAnswers(userAnswersToSave);
+    if (userAnswersToSave.length > 0) {
+      await testRepository.createUserAnswers(userAnswersToSave);
+    }
 
     // 5. Predict Rank & Analyze Weak Topics via AI Engine
     let rankEstimated = 9999;
@@ -151,15 +171,19 @@ export class TestService {
       rankEstimated = rankResponse.data.estimated_rank_min;
     } catch (err: any) {
       console.error('Failed to query AI engine for rank prediction, running fallback:', err.message);
-      // Fallback
       rankEstimated = Math.max(1, Math.round((100 - totalScore) * 120));
     }
 
-    // 6. Update Attempt status
+    // 6. Calculate Percentile
+    const totalCandidates = 100000;
+    const percentile = parseFloat((Math.max(0.1, Math.min(99.99, 100 - (rankEstimated / totalCandidates) * 100))).toFixed(2));
+
+    // 7. Update Attempt status in DB
     const completedAttempt = await testRepository.updateAttempt(attemptId, {
       score: totalScore,
       rankEstimated,
-      status: 'COMPLETED',
+      percentile,
+      status, // COMPLETED or SUBMITTED
       endTime: new Date()
     });
 
@@ -167,6 +191,7 @@ export class TestService {
       attemptId: completedAttempt.id,
       score: completedAttempt.score,
       rankEstimated: completedAttempt.rankEstimated,
+      percentile: completedAttempt.percentile,
       status: completedAttempt.status,
       startTime: completedAttempt.startTime,
       endTime: completedAttempt.endTime
@@ -177,8 +202,112 @@ export class TestService {
     return testRepository.findAttemptsByUserId(userId);
   }
 
-  async logCheatEvent(attemptId: string, eventType: string, details?: string) {
-    return testRepository.createAntiCheatLog(attemptId, eventType, details);
+  async getRemainingTime(attemptId: string) {
+    const attempt = await testRepository.findAttemptById(attemptId);
+    if (!attempt) {
+      throw new Error('Test attempt not found');
+    }
+
+    if (attempt.status !== 'IN_PROGRESS') {
+      return {
+        remainingSeconds: 0,
+        isExpired: true,
+        status: attempt.status
+      };
+    }
+
+    const elapsedSeconds = Math.floor((Date.now() - new Date(attempt.startTime).getTime()) / 1000);
+    const remainingSeconds = Math.max(0, attempt.durationSeconds - elapsedSeconds);
+
+    if (remainingSeconds <= 0) {
+      // Auto submit test since timer expired
+      await testRepository.createAntiCheatLog(attemptId, 'AUTO_SUBMIT', 'Test automatically submitted due to server timer expiration.', attempt.userId);
+      const result = await this.submitTest(attemptId, [], [], 'SUBMITTED');
+      
+      return {
+        remainingSeconds: 0,
+        isExpired: true,
+        status: 'SUBMITTED',
+        result
+      };
+    }
+
+    return {
+      remainingSeconds,
+      isExpired: false,
+      status: attempt.status
+    };
+  }
+
+  async logCheatEvent(
+    attemptId: string,
+    eventType: string,
+    details?: string,
+    userId?: string,
+    answers: any[] = []
+  ) {
+    const attempt = await testRepository.findAttemptById(attemptId);
+    if (!attempt) {
+      throw new Error('Test attempt not found');
+    }
+
+    // If test is not in progress, do nothing
+    if (attempt.status !== 'IN_PROGRESS') {
+      return {
+        autoSubmitted: false,
+        violationsCount: attempt.violationsCount,
+        credibilityScore: attempt.credibilityScore,
+        status: attempt.status
+      };
+    }
+
+    // 1. Calculate penalty
+    const PENALTIES: Record<string, number> = {
+      TAB_SWITCH: 10,
+      WINDOW_BLUR: 10,
+      FULLSCREEN_EXIT: 15,
+      MULTIPLE_LOGIN: 20
+    };
+    const penalty = PENALTIES[eventType] || 0;
+
+    // 2. Increment Redis violation counter
+    const newViolationsCount = await redisClient.incr(`attempt:${attemptId}:violations`);
+
+    // 3. Deduct penalty from credibility score
+    const newCredibilityScore = Math.max(0, attempt.credibilityScore - penalty);
+
+    // 4. Log to DB AntiCheatLog table
+    await testRepository.createAntiCheatLog(attemptId, eventType, details, userId || attempt.userId);
+
+    // 5. Update violations and credibility score on attempt in PostgreSQL
+    await testRepository.updateAttempt(attemptId, {
+      violationsCount: newViolationsCount,
+      credibilityScore: newCredibilityScore
+    });
+
+    // 6. Check for auto-submit (violations >= 3 or AUTO_SUBMIT event)
+    if (newViolationsCount >= 3 || eventType === 'AUTO_SUBMIT') {
+      // Log another anti-cheat log for AUTO_SUBMIT
+      await testRepository.createAntiCheatLog(attemptId, 'AUTO_SUBMIT', 'Test automatically submitted due to security violations.', userId || attempt.userId);
+      
+      // Auto submit attempt
+      const result = await this.submitTest(attemptId, answers, [], 'SUBMITTED');
+      
+      return {
+        autoSubmitted: true,
+        violationsCount: newViolationsCount,
+        credibilityScore: newCredibilityScore,
+        status: 'SUBMITTED',
+        result
+      };
+    }
+
+    return {
+      autoSubmitted: false,
+      violationsCount: newViolationsCount,
+      credibilityScore: newCredibilityScore,
+      status: attempt.status
+    };
   }
 
   // --- Seeding Core questions if DB is fresh ---

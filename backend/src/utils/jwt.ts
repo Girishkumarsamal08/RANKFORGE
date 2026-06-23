@@ -7,6 +7,7 @@ interface UserPayload {
   id: string;
   email: string;
   name: string;
+  sessionId?: string;
 }
 
 export const generateToken = (payload: UserPayload): string => {

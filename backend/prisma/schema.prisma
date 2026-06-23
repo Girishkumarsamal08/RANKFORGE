@@ -8,13 +8,14 @@ generator client {
 }
 
 model User {
-  id        String        @id @default(uuid())
-  email     String        @unique
-  password  String
-  name      String
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  attempts  TestAttempt[]
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  attempts      TestAttempt[]
+  antiCheatLogs AntiCheatLog[]
 }
 
 model Exam {
@@ -57,18 +58,22 @@ model Question {
 }
 
 model TestAttempt {
-  id            String         @id @default(uuid())
-  userId        String
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  examId        String
-  exam          Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
-  score         Float?
-  rankEstimated Int?
-  status        String         @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, SUSPENDED
-  startTime     DateTime       @default(now())
-  endTime       DateTime?
-  userAnswers   UserAnswer[]
-  antiCheatLogs AntiCheatLog[]
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examId           String
+  exam             Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
+  score            Float?
+  rankEstimated    Int?
+  percentile       Float?
+  credibilityScore Int            @default(100)
+  violationsCount  Int            @default(0)
+  durationSeconds  Int            @default(1800)
+  status           String         @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, SUSPENDED, SUBMITTED
+  startTime        DateTime       @default(now())
+  endTime          DateTime?
+  userAnswers      UserAnswer[]
+  antiCheatLogs    AntiCheatLog[]
 }
 
 model UserAnswer {
@@ -83,10 +88,12 @@ model UserAnswer {
 }
 
 model AntiCheatLog {
-  id         String      @id @default(uuid())
-  attemptId  String
-  attempt    TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  eventType  String      // TAB_SWITCH, FULLSCREEN_EXIT, FACE_LOST
-  timestamp  DateTime    @default(now())
-  details    String?
+  id        String       @id @default(uuid())
+  attemptId String?
+  attempt   TestAttempt? @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType String       // TAB_SWITCH, WINDOW_BLUR, FULLSCREEN_EXIT, MULTIPLE_LOGIN, AUTO_SUBMIT
+  createdAt DateTime     @default(now())
+  metadata  String?
 }
