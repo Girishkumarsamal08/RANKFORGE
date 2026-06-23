@@ -63,6 +63,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:5001/api
     container_name: rankforge_frontend
     restart: always
     ports:
