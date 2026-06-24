@@ -4,7 +4,7 @@ import Providers from './providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'RANKFORGE | AI GATE prep',
+  title: 'RANKFORGE',
   description: 'AI-Powered GATE mock testing, rank prediction, and weak topic recommendations engine.',
 };
 
