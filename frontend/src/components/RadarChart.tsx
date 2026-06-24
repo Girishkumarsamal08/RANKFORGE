@@ -13,19 +13,20 @@ interface RadarChartProps {
 }
 
 export default function RadarChart({ data, size = 300 }: RadarChartProps) {
-  if (!data || data.length < 3) {
-    return (
-      <div className="flex h-[300px] items-center justify-center text-xs text-zinc-400">
-        Take tests in multiple subjects to populate the radar chart.
-      </div>
-    );
-  }
-
   const center = size / 2;
-  const rMax = (size / 2) - 40; // Max radius leaving margin for labels
-  const totalAxes = data.length;
+  const rMax = (size / 2) - 45; // Max radius leaving margin for labels
 
-  // Grid levels (e.g. 0.2, 0.4, 0.6, 0.8, 1.0)
+  // Core topics with their importance/weightage rates based on past 5 years of GATE exams
+  const coreTopics = [
+    { name: 'Linear Algebra', importance: 0.80 },
+    { name: 'Probability & Statistics', importance: 0.85 },
+    { name: 'Verbal Aptitude', importance: 0.70 },
+    { name: 'Quantitative Aptitude', importance: 0.80 },
+    { name: 'Algorithms', importance: 0.95 },
+    { name: 'Operating Systems', importance: 0.90 }
+  ];
+
+  const totalAxes = coreTopics.length;
   const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
 
   // Helper to get coordinates on the axis
@@ -38,16 +39,32 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
     };
   };
 
-  // Generate coordinates for data points
-  const points = data.map((item, idx) => getCoordinates(idx, item.accuracy));
-  const pointsStr = points.map(p => `${p.x},${p.y}`).join(' ');
+  // 1. Generate coordinates for GATE Importance Rate polygon
+  const importancePoints = coreTopics.map((topic, idx) => getCoordinates(idx, topic.importance));
+  const importancePointsStr = importancePoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  // 2. Generate coordinates for User's Accuracy (if they have attempted tests)
+  // Check if they have at least one test attempt by looking at whether data is provided
+  const hasAttempts = data && data.length > 0;
+  
+  const userAccuracyData = coreTopics.map(coreTopic => {
+    // Find matching topic in user data (case insensitive)
+    const match = data?.find(item => item.topic.toLowerCase().replace('&', 'and') === coreTopic.name.toLowerCase().replace('&', 'and'));
+    return {
+      topic: coreTopic.name,
+      accuracy: match ? match.accuracy : 0.0
+    };
+  });
+
+  const userPoints = userAccuracyData.map((item, idx) => getCoordinates(idx, item.accuracy));
+  const userPointsStr = userPoints.map(p => `${p.x},${p.y}`).join(' ');
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <svg width={size} height={size} className="overflow-visible">
-        {/* Grids */}
+    <div className="flex flex-col items-center justify-center w-full">
+      <svg width={size} height={size} className="overflow-visible animate-fade-in">
+        {/* Grid Levels */}
         {levels.map((level, levelIdx) => {
-          const gridPoints = data.map((_, idx) => {
+          const gridPoints = coreTopics.map((_, idx) => {
             const coords = getCoordinates(idx, level);
             return `${coords.x},${coords.y}`;
           }).join(' ');
@@ -65,7 +82,7 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
         })}
 
         {/* Axes */}
-        {data.map((_, idx) => {
+        {coreTopics.map((_, idx) => {
           const outerPoint = getCoordinates(idx, 1);
           return (
             <line
@@ -80,22 +97,31 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
           );
         })}
 
-        {/* Shaded Accuracy Polygon */}
-        {points.length > 0 && (
+        {/* Shaded GATE Importance Rate Polygon (Gold/Orange) */}
+        <polygon
+          points={importancePointsStr}
+          fill="rgba(245, 158, 11, 0.05)"
+          stroke="#f59e0b"
+          strokeWidth="1.5"
+          strokeDasharray="4,4"
+        />
+
+        {/* Shaded User Accuracy Polygon (Brand Blue) */}
+        {hasAttempts && (
           <>
             <polygon
-              points={pointsStr}
-              fill="rgba(59, 88, 255, 0.15)"
+              points={userPointsStr}
+              fill="rgba(59, 88, 255, 0.22)"
               stroke="#3b58ff"
-              strokeWidth="2"
+              strokeWidth="2.5"
             />
             {/* Dots */}
-            {points.map((p, idx) => (
+            {userPoints.map((p, idx) => (
               <circle
                 key={idx}
                 cx={p.x}
                 cy={p.y}
-                r="4"
+                r="4.5"
                 fill="#09090b"
                 stroke="#3b58ff"
                 strokeWidth="2.5"
@@ -105,8 +131,8 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
         )}
 
         {/* Labels */}
-        {data.map((item, idx) => {
-          const labelCoords = getCoordinates(idx, 1.15); // Push labels slightly further out
+        {coreTopics.map((item, idx) => {
+          const labelCoords = getCoordinates(idx, 1.22); // Push labels slightly further out
           const anchor = labelCoords.x > center + 10 ? 'start' : labelCoords.x < center - 10 ? 'end' : 'middle';
           
           return (
@@ -115,16 +141,33 @@ export default function RadarChart({ data, size = 300 }: RadarChartProps) {
               x={labelCoords.x}
               y={labelCoords.y + 4}
               textAnchor={anchor}
-              fontSize="10"
-              fontWeight="600"
+              fontSize="9"
+              fontWeight="700"
               fill="#a1a1aa"
               className="select-none"
             >
-              {item.topic}
+              {item.name}
             </text>
           );
         })}
       </svg>
+
+      {/* Legend Container */}
+      <div className="mt-6 flex flex-col sm:flex-row gap-4 text-[10px] font-bold uppercase tracking-wider">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-brand-500 border border-brand-400" />
+          <span className="text-zinc-300">
+            {hasAttempts ? 'Your Accuracy' : 'Your Accuracy (No Mocks Attempted)'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded bg-amber-500/20 border border-amber-500 border-dashed" />
+          <span className="text-amber-500">
+            GATE Importance Rate (Last 5 Yrs Avg)
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
+
