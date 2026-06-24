@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Clock } from 'lucide-react';
 import { formatTime } from '../utils/formatTime';
 import { cn } from '../lib/utils';
@@ -14,29 +14,39 @@ interface TestTimerProps {
 export default function TestTimer({ initialSeconds, onTimeout, onTick }: TestTimerProps) {
   const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
 
+  // Store callbacks in refs to avoid re-triggering the interval effect when their references change
+  const onTimeoutRef = useRef(onTimeout);
+  const onTickRef = useRef(onTick);
+
+  useEffect(() => {
+    onTimeoutRef.current = onTimeout;
+    onTickRef.current = onTick;
+  });
+
+  // Sync state with initialSeconds when updated by server sync
   useEffect(() => {
     setSecondsLeft(initialSeconds);
   }, [initialSeconds]);
 
+  // Main countdown timer effect
   useEffect(() => {
-    if (secondsLeft <= 0) {
-      onTimeout();
-      return;
-    }
-
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          onTimeoutRef.current();
+          return 0;
+        }
         const nextVal = prev - 1;
-        if (onTick) {
-          const elapsed = initialSeconds - nextVal;
-          onTick(elapsed);
+        if (onTickRef.current) {
+          onTickRef.current(initialSeconds - nextVal);
         }
         return nextVal;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [secondsLeft, onTimeout, onTick, initialSeconds]);
+  }, [initialSeconds]);
 
   const isLowTime = secondsLeft <= 300; // Under 5 minutes
 
@@ -53,3 +63,4 @@ export default function TestTimer({ initialSeconds, onTimeout, onTick }: TestTim
     </div>
   );
 }
+
