@@ -21,6 +21,11 @@ export default function Sidebar() {
       icon: FileText,
     },
     {
+      label: 'GATE PYQs',
+      href: '/pyqs',
+      icon: BookOpen,
+    },
+    {
       label: 'Performance Analysis',
       href: '/tests/results',
       icon: BarChart2,
