@@ -209,8 +209,105 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              {/* GATE Exam Weightage Blueprint Card */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                {/* General Aptitude */}
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/25 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Part 1 (Syllabus)</span>
+                    <span className="rounded-lg bg-emerald-950/40 border border-emerald-900/40 px-2 py-0.5 text-xs font-extrabold text-emerald-400">15% Marks</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white mb-2">General Aptitude</h4>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+                    Verbal (grammar, comprehension), Quantitative (data, probability), Analytical (logic), and Spatial (transformations, patterns).
+                  </p>
+                  <div className="space-y-1.5 text-[10px] text-zinc-300 font-medium">
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Verbal Reasoning & Grammar</span>
+                      <span className="text-zinc-400 font-mono">~4-5%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Quantitative Aptitude</span>
+                      <span className="text-zinc-400 font-mono">~4-5%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Analytical Logic & Reasoning</span>
+                      <span className="text-zinc-400 font-mono">~3-4%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Spatial Transformations</span>
+                      <span className="text-zinc-400 font-mono">~2-3%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Engineering Mathematics */}
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/25 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Part 2 (Syllabus)</span>
+                    <span className="rounded-lg bg-brand-950/40 border border-brand-900/40 px-2 py-0.5 text-xs font-extrabold text-brand-400">13% Marks</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white mb-2">Engineering Mathematics</h4>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+                    Discrete Math (logic, graph theory, sets), Linear Algebra, Calculus (limits, integration), and Probability & Statistics.
+                  </p>
+                  <div className="space-y-1.5 text-[10px] text-zinc-300 font-medium">
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Discrete Mathematics</span>
+                      <span className="text-zinc-400 font-mono">~5-6%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Linear Algebra (Matrices, Eigenvalues)</span>
+                      <span className="text-zinc-400 font-mono">~3-4%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1.5">
+                      <span>Probability & Statistics</span>
+                      <span className="text-zinc-400 font-mono">~3-4%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Calculus (Limits, Continuity)</span>
+                      <span className="text-zinc-400 font-mono">~1-2%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Core Computer Science */}
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/25 p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Part 3 (Syllabus)</span>
+                    <span className="rounded-lg bg-amber-950/40 border border-amber-900/40 px-2 py-0.5 text-xs font-extrabold text-amber-400">72% Marks</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white mb-2">Core CS Subjects</h4>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+                    Programming, Data Structures, Algorithms, TOC, Operating Systems, Databases, Computer Networks, COA, Digital Logic, and Compiler.
+                  </p>
+                  <div className="space-y-1.5 text-[10px] text-zinc-300 font-medium">
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1">
+                      <span>Programming & Data Structures</span>
+                      <span className="text-zinc-400 font-mono">~10-12%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1">
+                      <span>Algorithms (Greedy, Dynamic)</span>
+                      <span className="text-zinc-400 font-mono">~10-12%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1">
+                      <span>TOC, Parsing & Compiler</span>
+                      <span className="text-zinc-400 font-mono">~12-14%</span>
+                    </div>
+                    <div className="flex justify-between border-b border-zinc-850/80 pb-1">
+                      <span>OS & Databases (SQL, Normal Forms)</span>
+                      <span className="text-zinc-400 font-mono">~16-18%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Networks (TCP/IP), COA & Logic</span>
+                      <span className="text-zinc-400 font-mono">~18-20%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Weak Topics Analysis Table */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm mt-6">
                 <h3 className="text-base font-bold text-zinc-100 mb-1">Concept Vulnerabilities</h3>
                 <p className="text-xs text-zinc-400 mb-5">Ranked by accuracy and review priority</p>
 
