@@ -85,6 +85,8 @@ export class TestService {
     await redisClient.del(`attempt:${attemptId}:active`);
     await redisClient.del(`user:${attempt.userId}:active_attempt`);
     await redisClient.del(`attempt:${attemptId}:violations`);
+    await redisClient.del(`dashboard:${attempt.userId}`); // Invalidate dashboard cache
+
 
     // 1. Save anti-cheat logs
     if (antiCheatLogs && antiCheatLogs.length > 0) {

@@ -20,11 +20,13 @@ export class AnalyticsService {
       console.warn('Redis read failed, querying DB directly:', err.message);
     }
 
-    // 2. Fetch completed attempts from database
+    // 2. Fetch completed/submitted attempts from database
     const attempts = await prisma.testAttempt.findMany({
       where: {
         userId,
-        status: 'COMPLETED'
+        status: {
+          in: ['COMPLETED', 'SUBMITTED']
+        }
       },
       include: {
         userAnswers: {
