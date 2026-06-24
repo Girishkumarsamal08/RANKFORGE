@@ -6,5 +6,7 @@ const router = Router();
 const analyticsController = new AnalyticsController();
 
 router.get('/dashboard', protect, analyticsController.getDashboard);
+router.post('/college-advisor', protect, analyticsController.getCollegeRecommendations);
 
 export default router;
+

@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import health, rank, topics
+from app.routes import health, rank, topics, college
 
 app = FastAPI(
     title="RANKFORGE AI Engine",
@@ -22,6 +22,8 @@ app.add_middleware(
 app.include_router(health.router, tags=["Health"])
 app.include_router(rank.router, prefix="/api", tags=["Rank Prediction"])
 app.include_router(topics.router, prefix="/api", tags=["Weak Topics Analysis"])
+app.include_router(college.router, prefix="/api", tags=["College Recommendation"])
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -157,6 +157,44 @@ export class AnalyticsService {
       };
     }).sort((a, b) => (a.recommendation_priority === 'HIGH' ? -1 : 1));
   }
+
+  async getCollegeRecommendations(userId: string, query: string) {
+    const attempts = await prisma.testAttempt.findMany({
+      where: {
+        userId,
+        status: {
+          in: ['COMPLETED', 'SUBMITTED']
+        }
+      },
+      include: {
+        exam: true
+      }
+    });
+
+    if (attempts.length === 0) {
+      return {
+        recommendation: "### 🤖 AI College Admissions Advisor\n\nYou haven't completed any mock tests yet! Please attempt at least one GATE mock test from your dashboard so that I can evaluate your performance score, determine your stream (CS, ME, EC, etc.), and provide personalized college recommendations for you."
+      };
+    }
+
+    const scores = attempts.map((a: any) => a.score || 0);
+    const avgScore = parseFloat((scores.reduce((a: number, b: number) => a + b, 0) / attempts.length).toFixed(2));
+    const branch = attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS';
+
+    try {
+      const response = await axios.post(`${AI_ENGINE_URL}/api/college/recommend`, {
+        score: avgScore,
+        branch,
+        query
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error('Failed to contact AI Engine for college advisor:', err.message);
+      return {
+        recommendation: "### 🤖 AI College Admissions Advisor\n\nI encountered an error querying the AI Engine. Please make sure the AI Engine service is online, then try again."
+      };
+    }
+  }
 }
 
 function round(val: number, precision: number): number {

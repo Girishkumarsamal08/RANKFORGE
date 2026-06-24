@@ -285,8 +285,8 @@ export class TestService {
       credibilityScore: newCredibilityScore
     });
 
-    // 6. Check for auto-submit (violations >= 3 or AUTO_SUBMIT event)
-    if (newViolationsCount >= 3 || eventType === 'AUTO_SUBMIT') {
+    // 6. Check for auto-submit (violations > 3 or AUTO_SUBMIT event)
+    if (newViolationsCount > 3 || eventType === 'AUTO_SUBMIT') {
       // Log another anti-cheat log for AUTO_SUBMIT
       await testRepository.createAntiCheatLog(attemptId, 'AUTO_SUBMIT', 'Test automatically submitted due to security violations.', userId || attempt.userId);
       

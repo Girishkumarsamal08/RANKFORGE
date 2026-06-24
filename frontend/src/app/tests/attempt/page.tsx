@@ -60,7 +60,7 @@ export default function TestAttemptPage() {
       setServerCredibilityScore(credibilityScore);
 
       if (autoSubmitted) {
-        setWarningMessage('Critical security violation! You have exceeded the maximum of 3 violations. Your test attempt is being automatically submitted.');
+        setWarningMessage('Critical security violation! You have exceeded the maximum of 3 warnings. Your exam is being automatically submitted.');
         setShowWarningModal(true);
         setSubmitting(true);
         setTimeout(() => {
@@ -68,10 +68,13 @@ export default function TestAttemptPage() {
         }, 3000);
       } else {
         if (violationsCount === 1) {
-          setWarningMessage(`Warning: ${details} This is violation 1 of 3. Please maintain fullscreen and browser focus.`);
+          setWarningMessage(`Warning: ${details} This is warning 1. After 2 more warnings, the exam will be automatically submitted.`);
           setShowWarningModal(true);
         } else if (violationsCount === 2) {
-          setWarningMessage(`Final Warning: ${details} This is violation 2 of 3. One more violation will cause automatic submission of your test.`);
+          setWarningMessage(`Warning: ${details} This is warning 2. After 1 more warning, the exam will be automatically submitted.`);
+          setShowWarningModal(true);
+        } else if (violationsCount === 3) {
+          setWarningMessage(`Final Warning: ${details} This is warning 3 (your last warning). Any further tab switches, exiting fullscreen, or window blurs will cause immediate automatic submission of your exam!`);
           setShowWarningModal(true);
         }
       }

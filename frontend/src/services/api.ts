@@ -84,6 +84,10 @@ export const analyticsApi = {
     const { data } = await api.get('/analytics/dashboard');
     return data;
   },
+  collegeAdvisor: async (query: string) => {
+    const { data } = await api.post('/analytics/college-advisor', { query });
+    return data;
+  },
 };
 
 export default api;

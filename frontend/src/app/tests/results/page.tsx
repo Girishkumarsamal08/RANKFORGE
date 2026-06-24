@@ -100,13 +100,13 @@ export default function ResultsPage() {
               {/* Score Highlight Box */}
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 shadow-sm text-center">
                 
-                {latestAttempt.status === 'SUBMITTED' && (latestAttempt.violationsCount ?? 0) >= 3 && (
+                {latestAttempt.status === 'SUBMITTED' && (latestAttempt.violationsCount ?? 0) >= 4 && (
                   <div className="mb-6 rounded-xl border border-red-500/20 bg-red-950/15 p-4 flex gap-3 text-left text-xs text-red-400">
                     <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5 animate-pulse" />
                     <div>
                       <strong className="text-red-200 text-sm block mb-1">Test Automatically Submitted</strong>
                       <p className="leading-relaxed">
-                        This attempt was automatically submitted by the system because you exceeded the limit of 3 security violations (tab switching, fullscreen exiting, or losing window focus).
+                        This attempt was automatically submitted by the system because you exceeded the limit of 3 security warnings (tab switching, fullscreen exiting, or losing window focus).
                       </p>
                     </div>
                   </div>
@@ -152,8 +152,8 @@ export default function ResultsPage() {
 
                   <div className="rounded-xl bg-zinc-950/40 p-4 border border-zinc-850">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Violations Count</span>
-                    <p className={`text-xl font-extrabold mt-1 ${latestAttempt.violationsCount >= 2 ? 'text-red-400' : latestAttempt.violationsCount === 1 ? 'text-amber-400' : 'text-zinc-300'}`}>
-                      {latestAttempt.violationsCount ?? 0} / 3
+                    <p className={`text-xl font-extrabold mt-1 ${latestAttempt.violationsCount >= 3 ? 'text-red-400' : latestAttempt.violationsCount >= 1 ? 'text-amber-400' : 'text-zinc-300'}`}>
+                      {latestAttempt.violationsCount ?? 0} / 4
                     </p>
                   </div>
 
@@ -175,6 +175,26 @@ export default function ResultsPage() {
                     <span className="text-[10px] text-zinc-500 font-bold uppercase">Exam Code</span>
                     <p className="text-xl font-bold text-white mt-1">{latestAttempt.exam?.code.toUpperCase()}</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Global GATE India Rank Analysis Card */}
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <Trophy className="h-5 w-5 text-amber-500 shrink-0" />
+                  <h3 className="text-base font-bold text-white">GATE India National Benchmarking</h3>
+                </div>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                  Your performance is evaluated against the average annual population of GATE candidates in India (~100,000+ candidates for {latestAttempt.exam?.code.split('-')[1]?.toUpperCase() || 'CS'}).
+                </p>
+                
+                <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850/80 text-xs text-zinc-300 space-y-3">
+                  <p>
+                    With a score of <strong className="text-brand-400">{latestAttempt.score ?? 0}</strong> (scaled to standard GATE difficulty), you performed better than <strong className="text-emerald-400">{latestAttempt.percentile ?? 0}%</strong> of the national candidate pool.
+                  </p>
+                  <p className="border-t border-zinc-800/80 pt-3 text-[11px] text-zinc-400 leading-relaxed">
+                    Estimated All India Rank (AIR) standing: <strong className="text-white">#{latestAttempt.rankEstimated ?? 9999}</strong>. This rank is highly competitive for admissions into premium Indian postgraduate programs (IITs, NITs, and select PSU job referrals).
+                  </p>
                 </div>
               </div>
 
