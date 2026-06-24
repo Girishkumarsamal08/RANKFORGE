@@ -180,21 +180,76 @@ export default function ResultsPage() {
 
               {/* Global GATE India Rank Analysis Card */}
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <Trophy className="h-5 w-5 text-amber-500 shrink-0" />
-                  <h3 className="text-base font-bold text-white">GATE India National Benchmarking</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-amber-500 shrink-0" />
+                    <h3 className="text-base font-bold text-white">GATE India National Benchmarking</h3>
+                  </div>
+                  <span className="rounded-lg bg-zinc-950 px-2.5 py-1 text-[10px] font-bold text-zinc-550 border border-zinc-850">
+                    National Scale
+                  </span>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                  Your performance is evaluated against the average annual population of GATE candidates in India (~100,000+ candidates for {latestAttempt.exam?.code.split('-')[1]?.toUpperCase() || 'CS'}).
+                
+                <p className="text-xs text-zinc-400 leading-relaxed mb-5">
+                  Every year, approximately **900,000 candidates register** for the GATE exam in India, and **700,000 aspirants actually appear** in the test centers. Your rank is mapped against this highly competitive national pool:
                 </p>
                 
-                <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850/80 text-xs text-zinc-300 space-y-3">
-                  <p>
-                    With a score of <strong className="text-brand-400">{latestAttempt.score ?? 0}</strong> (scaled to standard GATE difficulty), you performed better than <strong className="text-emerald-400">{latestAttempt.percentile ?? 0}%</strong> of the national candidate pool.
-                  </p>
-                  <p className="border-t border-zinc-800/80 pt-3 text-[11px] text-zinc-400 leading-relaxed">
-                    Estimated All India Rank (AIR) standing: <strong className="text-white">#{latestAttempt.rankEstimated ?? 9999}</strong>. This rank is highly competitive for admissions into premium Indian postgraduate programs (IITs, NITs, and select PSU job referrals).
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Percentile Rank Callout */}
+                  <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850/80 text-xs text-zinc-300 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider block mb-2">National Standings</span>
+                      <p className="leading-relaxed">
+                        With a score of <strong className="text-brand-400">{latestAttempt.score ?? 0}/12.00</strong> (scaled to standard paper difficulty), you performed better than <strong className="text-emerald-400">{latestAttempt.percentile ?? 0}%</strong> of the **700,000 appearing candidates** in India.
+                      </p>
+                    </div>
+                    <div className="mt-4 border-t border-zinc-905 pt-2 text-[10px] text-zinc-400">
+                      Your All India Rank (AIR) standing: <strong className="text-white">#{latestAttempt.rankEstimated ?? 9999}</strong>
+                    </div>
+                  </div>
+
+                  {/* Admissions Probabilities Dashboard */}
+                  <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850/80 text-xs text-zinc-300">
+                    <span className="text-[10px] text-zinc-555 font-bold uppercase tracking-wider block mb-2.5">AI Admissions Verdict</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400 text-[10px]">IIT M.Tech Direct Entry:</span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold border ${
+                          (latestAttempt.percentile ?? 0) >= 95 
+                            ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/40' 
+                            : (latestAttempt.percentile ?? 0) >= 80 
+                            ? 'bg-amber-950/20 text-amber-400 border-amber-900/40' 
+                            : 'bg-red-950/20 text-red-400 border-red-900/40'
+                        }`}>
+                          {(latestAttempt.percentile ?? 0) >= 95 ? 'HIGH CHANCE' : (latestAttempt.percentile ?? 0) >= 80 ? 'MEDIUM CHANCE' : 'LOW PROBABILITY'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-zinc-850/80 pt-2">
+                        <span className="text-zinc-400 text-[10px]">PSU Shortlist Referral:</span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold border ${
+                          (latestAttempt.percentile ?? 0) >= 98 
+                            ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/40' 
+                            : (latestAttempt.percentile ?? 0) >= 90 
+                            ? 'bg-amber-950/20 text-amber-400 border-amber-900/40' 
+                            : 'bg-red-950/20 text-red-400 border-red-900/40'
+                        }`}>
+                          {(latestAttempt.percentile ?? 0) >= 98 ? 'HIGH CHANCE' : (latestAttempt.percentile ?? 0) >= 90 ? 'MEDIUM CHANCE' : 'LOW PROBABILITY'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-zinc-850/80 pt-2">
+                        <span className="text-zinc-400 text-[10px]">NIT Admissions Status:</span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold border ${
+                          (latestAttempt.percentile ?? 0) >= 80 
+                            ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/40' 
+                            : (latestAttempt.percentile ?? 0) >= 60 
+                            ? 'bg-amber-950/20 text-amber-400 border-amber-900/40' 
+                            : 'bg-red-950/20 text-red-400 border-red-900/40'
+                        }`}>
+                          {(latestAttempt.percentile ?? 0) >= 80 ? 'DIRECT SAFE' : (latestAttempt.percentile ?? 0) >= 60 ? 'COUNSELLING REQD' : 'RETAKE SUGGESTED'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
