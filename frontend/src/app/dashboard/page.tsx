@@ -8,7 +8,6 @@ import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import SnapshotCard from '../../components/SnapshotCard';
 import RadarChart from '../../components/RadarChart';
-import RankMeter from '../../components/RankMeter';
 import { analyticsApi } from '../../services/api';
 import { DashboardAnalytics } from '../../types';
 import { 
@@ -185,12 +184,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Right Pane - Rank Meter */}
-                <div className="flex flex-col gap-6 lg:col-span-5">
-                  <RankMeter rank={analytics.stats.currentRank} />
-                  
-                  {/* AI GATE College Admissions Advisor Chat Panel */}
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm flex-1 flex flex-col justify-between">
+                {/* Right Pane - AI GATE College Admissions Advisor Chat Panel Only */}
+                <div className="lg:col-span-5 flex flex-col h-full">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm flex-1 flex flex-col justify-between min-h-[420px]">
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <Bot className="h-5 w-5 text-brand-400" />
@@ -252,7 +248,7 @@ export default function DashboardPage() {
                       )}
 
                       {chatResponse && (
-                        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-5 shadow-inner border-l-2 border-l-brand-500 max-h-[160px] overflow-y-auto animate-fade-in">
+                        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-5 shadow-inner border-l-2 border-l-brand-500 max-h-[260px] overflow-y-auto animate-fade-in">
                           {renderMarkdown(chatResponse)}
                         </div>
                       )}
