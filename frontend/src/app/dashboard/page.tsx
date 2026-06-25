@@ -189,92 +189,75 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-6 lg:col-span-5">
                   <RankMeter rank={analytics.stats.currentRank} />
                   
-                  {/* Smart Score Insights */}
-                  <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-sm flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="h-5 w-5 text-amber-400" />
-                      <h4 className="font-bold text-zinc-100 text-sm">Smart Score Insights</h4>
+                  {/* AI GATE College Admissions Advisor Chat Panel */}
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Bot className="h-5 w-5 text-brand-400" />
+                        <h3 className="text-base font-bold text-white">AI GATE College Admissions Advisor</h3>
+                      </div>
+                      
+                      <p className="text-xs text-zinc-400 leading-relaxed mb-5">
+                        Ask our AI expert about college admission referrals, minimum GATE scores, and where you stand for IISc, IITs, NITs, and other premier engineering institutes in India based on your mock exam history.
+                      </p>
+
+                      {/* Prompt suggestion chips */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <button 
+                          onClick={() => { setChatQuery("Which college can I refer to?"); handleAskAdvisor("Which college can I refer to?"); }}
+                          className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
+                        >
+                          🔍 "Which college can I refer to?"
+                        </button>
+                        <button 
+                          onClick={() => { setChatQuery("Can I get into IITs with my current average score?"); handleAskAdvisor("Can I get into IITs with my current average score?"); }}
+                          className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
+                        >
+                          🏫 "What about IITs?"
+                        </button>
+                        <button 
+                          onClick={() => { setChatQuery("What NIT options do I have?"); handleAskAdvisor("What NIT options do I have?"); }}
+                          className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
+                        >
+                          ⚡ "What about NITs?"
+                        </button>
+                      </div>
                     </div>
-                    <ul className="space-y-2 text-xs text-zinc-400 leading-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-brand-400 font-bold">•</span>
-                        <span>Answered questions correctly within 90 seconds are marked as <strong>High Fluidity</strong>.</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-brand-400 font-bold">•</span>
-                        <span>Multiple tab switches during tests flags anti-cheat log alerts. Keep attempts clean!</span>
-                      </li>
-                    </ul>
+
+                    <div className="space-y-4">
+                      {/* Chat input box */}
+                      <form onSubmit={(e) => { e.preventDefault(); handleAskAdvisor(chatQuery); }} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={chatQuery}
+                          onChange={(e) => setChatQuery(e.target.value)}
+                          placeholder="e.g. which college can I refer to with my marks?"
+                          className="flex-1 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2.5 text-xs text-white placeholder-zinc-550 outline-none transition focus:border-brand-500 focus:bg-zinc-900/80 focus:ring-2 focus:ring-brand-500/20"
+                        />
+                        <button
+                          type="submit"
+                          disabled={chatLoading || !chatQuery.trim()}
+                          className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow hover:bg-brand-700 disabled:opacity-50 disabled:hover:bg-brand-600 transition cursor-pointer"
+                        >
+                          <Send className="h-4 w-4" />
+                        </button>
+                      </form>
+
+                      {/* Advisor response container */}
+                      {chatLoading && (
+                        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-5 flex items-center justify-center gap-3">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-800 border-t-brand-500" />
+                          <span className="text-xs font-bold text-zinc-400 animate-pulse">Evaluating cutoffs and referencing colleges...</span>
+                        </div>
+                      )}
+
+                      {chatResponse && (
+                        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-5 shadow-inner border-l-2 border-l-brand-500 max-h-[160px] overflow-y-auto animate-fade-in">
+                          {renderMarkdown(chatResponse)}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
-
-
-              {/* AI College Admissions Advisor Chat Panel */}
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm mt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Bot className="h-5 w-5 text-brand-400" />
-                  <h3 className="text-base font-bold text-white">AI GATE College Admissions Advisor</h3>
-                </div>
-                
-                <p className="text-xs text-zinc-400 leading-relaxed mb-5">
-                  Ask our AI expert about college admission referrals, minimum GATE scores, and where you stand for IISc, IITs, NITs, and other premier engineering institutes in India based on your mock exam history.
-                </p>
-
-                {/* Prompt suggestion chips */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <button 
-                    onClick={() => { setChatQuery("Which college can I refer to?"); handleAskAdvisor("Which college can I refer to?"); }}
-                    className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
-                  >
-                    🔍 "Which college can I refer to?"
-                  </button>
-                  <button 
-                    onClick={() => { setChatQuery("Can I get into IITs with my current average score?"); handleAskAdvisor("Can I get into IITs with my current average score?"); }}
-                    className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
-                  >
-                    🏫 "What about IITs?"
-                  </button>
-                  <button 
-                    onClick={() => { setChatQuery("What NIT options do I have?"); handleAskAdvisor("What NIT options do I have?"); }}
-                    className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
-                  >
-                    ⚡ "What about NITs?"
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Chat input box */}
-                  <form onSubmit={(e) => { e.preventDefault(); handleAskAdvisor(chatQuery); }} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={chatQuery}
-                      onChange={(e) => setChatQuery(e.target.value)}
-                      placeholder="e.g. which college can I refer to with my marks?"
-                      className="flex-1 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2.5 text-xs text-white placeholder-zinc-550 outline-none transition focus:border-brand-500 focus:bg-zinc-900/80 focus:ring-2 focus:ring-brand-500/20"
-                    />
-                    <button
-                      type="submit"
-                      disabled={chatLoading || !chatQuery.trim()}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow hover:bg-brand-700 disabled:opacity-50 disabled:hover:bg-brand-600 transition cursor-pointer"
-                    >
-                      <Send className="h-4 w-4" />
-                    </button>
-                  </form>
-
-                  {/* Advisor response container */}
-                  {chatLoading && (
-                    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-5 flex items-center justify-center gap-3">
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-800 border-t-brand-500" />
-                      <span className="text-xs font-bold text-zinc-400 animate-pulse">Evaluating cutoffs and referencing colleges...</span>
-                    </div>
-                  )}
-
-                  {chatResponse && (
-                    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-5 shadow-inner border-l-2 border-l-brand-500 max-h-[350px] overflow-y-auto animate-fade-in">
-                      {renderMarkdown(chatResponse)}
-                    </div>
-                  )}
                 </div>
               </div>
 
