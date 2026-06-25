@@ -180,7 +180,7 @@ export class AnalyticsService {
 
     if (attempts.length === 0) {
       return {
-        recommendation: "### 🤖 AI College Admissions Advisor\n\nYou haven't completed any mock tests yet! Please attempt at least one GATE mock test from your dashboard so that I can evaluate your performance score, determine your stream (CS, ME, EC, etc.), and provide personalized college recommendations for you."
+        recommendation: "### College Admissions Advisor\n\nYou haven't completed any mock tests yet. Please attempt at least one GATE mock test from your dashboard so that your performance score can be evaluated, your stream (CS, ME, EC, etc.) identified, and personalized college recommendations generated for you."
       };
     }
 
@@ -188,6 +188,7 @@ export class AnalyticsService {
     const avgScore = parseFloat((scores.reduce((a: number, b: number) => a + b, 0) / attempts.length).toFixed(2));
     const branch = attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS';
 
+    // Try the AI Engine first; fall back to rule-based recommendations
     try {
       const response = await axios.post(`${AI_ENGINE_URL}/api/college/recommend`, {
         score: avgScore,
@@ -196,11 +197,91 @@ export class AnalyticsService {
       }, { timeout: 5000 });
       return response.data;
     } catch (err: any) {
-      console.error('Failed to contact AI Engine for college advisor:', err.message);
+      console.error('AI Engine unavailable, using rule-based college advisor:', err.message);
       return {
-        recommendation: "### 🤖 AI College Admissions Advisor\n\nI encountered an error querying the AI Engine. Please make sure the AI Engine service is online, then try again."
+        recommendation: this.generateLocalCollegeRecommendation(avgScore, branch, query)
       };
     }
+  }
+
+  private generateLocalCollegeRecommendation(avgScore: number, branch: string, query: string): string {
+    const estimatedRank = this.scoreToEstimatedRank(avgScore);
+    const queryLower = query.toLowerCase();
+
+    let output = `### College Admissions Advisor\n\n`;
+    output += `**Your Profile:** Average Score: **${avgScore}%** | Branch: **${branch}** | Estimated AIR: **~${estimatedRank}**\n\n`;
+
+    // Determine which colleges to highlight based on query context
+    const wantsIIT = queryLower.includes('iit');
+    const wantsNIT = queryLower.includes('nit');
+    const wantsIISc = queryLower.includes('iisc');
+    const wantsPSU = queryLower.includes('psu');
+    const generalQuery = !wantsIIT && !wantsNIT && !wantsIISc && !wantsPSU;
+
+    if (estimatedRank <= 100) {
+      output += `#### Top Ranker Category (AIR Under 100)\n\n`;
+      output += `With this performance, you are in an excellent position for admissions to the most competitive programs in the country.\n\n`;
+      if (generalQuery || wantsIISc) {
+        output += `**IISc Bangalore:**\n* IISc M.Tech / M.E. in ${branch} — Strong admit probability. IISc typically admits within AIR 1-200 range for popular branches.\n\n`;
+      }
+      if (generalQuery || wantsIIT) {
+        output += `**Top IITs (Old IITs):**\n* IIT Bombay — ${branch} dept. admits typically under AIR 150\n* IIT Delhi — ${branch} specializations accessible under AIR 200\n* IIT Kanpur — Top ${branch} programs within AIR 250\n* IIT Madras — Highly competitive, admits under AIR 200\n* IIT Kharagpur — Broader intake, strong placement record\n\n`;
+      }
+      if (generalQuery || wantsPSU) {
+        output += `**PSU Opportunities:**\n* IOCL, NTPC, BHEL, PGCIL, ONGC — Direct interview calls for AIR under 100. Expect shortlisting from multiple PSUs.\n\n`;
+      }
+    } else if (estimatedRank <= 500) {
+      output += `#### Elite Category (AIR 100-500)\n\n`;
+      output += `You have a strong competitive profile. Several premier institutions are within reach.\n\n`;
+      if (generalQuery || wantsIIT) {
+        output += `**IITs (Realistic Options):**\n* IIT Bombay — Possible for less-competitive ${branch} specializations\n* IIT Delhi, IIT Kanpur, IIT Madras — Accessible for most ${branch} streams\n* IIT Roorkee, IIT Guwahati, IIT Hyderabad — High probability of admission\n* Newer IITs (Indore, BHU, Ropar, Patna, Gandhinagar) — Confirmed admit range\n\n`;
+      }
+      if (generalQuery || wantsIISc) {
+        output += `**IISc Bangalore:**\n* Possible for certain ${branch} research programs. Cutoff varies by specialization (typically AIR under 300-500).\n\n`;
+      }
+      if (generalQuery || wantsNIT) {
+        output += `**Top NITs:**\n* NIT Trichy, NIT Warangal, NIT Surathkal — Prime ${branch} seats available in this rank range\n\n`;
+      }
+      if (generalQuery || wantsPSU) {
+        output += `**PSU Opportunities:**\n* BARC, ISRO — Interview calls likely for AIR under 500\n* IOCL, NTPC, BHEL — Strong chances of shortlisting\n\n`;
+      }
+    } else if (estimatedRank <= 2000) {
+      output += `#### Qualifying Standard (AIR 500-2000)\n\n`;
+      output += `A solid performance level. You have good options across NITs, IIITs, and newer IITs.\n\n`;
+      if (generalQuery || wantsIIT) {
+        output += `**IITs (Accessible):**\n* Newer IITs (Patna, Ropar, Mandi, Jodhpur, Bhilai, Goa, Palakkad, Dharwad, Tirupati) — Most ${branch} programs are within this AIR range\n* IIT (ISM) Dhanbad — Select specializations\n\n`;
+      }
+      if (generalQuery || wantsNIT) {
+        output += `**NITs (Strong Options):**\n* NIT Trichy, NIT Warangal, NIT Surathkal — Competitive but possible\n* NIT Calicut, NIT Allahabad, NIT Jaipur, NIT Rourkela — High admit probability\n* Most other NITs — Confirmed range for ${branch}\n\n`;
+      }
+      if (generalQuery) {
+        output += `**IIITs and CFTIs:**\n* IIIT Hyderabad, IIIT Bangalore, IIIT Allahabad — Good options for ${branch}\n* DIAT Pune, IIEST Shibpur — Accessible\n\n`;
+      }
+    } else {
+      output += `#### Development Category (AIR 2000+)\n\n`;
+      output += `Your current score indicates room for improvement. Focus on strengthening weak areas for better college options.\n\n`;
+      if (generalQuery || wantsNIT) {
+        output += `**Currently Accessible NITs:**\n* Select NITs with higher AIR cutoffs for ${branch} (NITs in NE region, Uttarakhand, Meghalaya, Mizoram, Sikkim, Arunachal Pradesh)\n\n`;
+      }
+      if (generalQuery) {
+        output += `**Other Options:**\n* State-funded engineering colleges with GATE scores\n* GATE-qualified PSU recruitment (varies by cutoff each year)\n* Several IIITs and centrally-funded technical institutions accept in this range\n\n`;
+        output += `**Improvement Strategy:**\n* Re-analyze your weak topics using the Performance Analysis section\n* Practice more PYQs from the GATE PYQ Library\n* Target high-weightage subjects to maximize score improvement\n`;
+      }
+    }
+
+    output += `\n---\n*Recommendations are based on historical GATE cutoff trends for ${branch}. Actual cutoffs vary each year based on paper difficulty, number of candidates, and seat availability.*`;
+
+    return output;
+  }
+
+  private scoreToEstimatedRank(avgScore: number): number {
+    // Approximate mapping from percentage score to GATE AIR
+    // Based on typical GATE CS score distributions
+    if (avgScore >= 75) return Math.max(1, Math.round(50 + (85 - avgScore) * 10));
+    if (avgScore >= 60) return Math.round(100 + (75 - avgScore) * 40);
+    if (avgScore >= 45) return Math.round(700 + (60 - avgScore) * 150);
+    if (avgScore >= 30) return Math.round(3000 + (45 - avgScore) * 400);
+    return Math.round(9000 + (30 - avgScore) * 500);
   }
 }
 

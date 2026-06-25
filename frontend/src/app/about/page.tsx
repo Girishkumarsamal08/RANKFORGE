@@ -18,7 +18,11 @@ import {
   AlertTriangle,
   Github,
   Linkedin,
-  Globe
+  Globe,
+  Layers,
+  BookOpen,
+  TrendingUp,
+  Shield
 } from 'lucide-react';
 
 export default function AboutPage() {
@@ -313,18 +317,64 @@ export default function AboutPage() {
             </div>
             
             <div className="flex justify-center items-center">
-              <div className="relative rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-2 shadow-2xl overflow-hidden group max-w-md w-full">
-                <img 
-                  src="/Rankforge.png" 
-                  alt="RANKFORGE Showcase" 
-                  className="rounded-2xl w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition duration-500 shadow-lg"
-                  onError={(e) => {
-                    // Fallback to standard logo if Rankforge.png is missing
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/logo.jpeg';
-                  }}
-                />
+              <div className="relative rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-2xl max-w-md w-full space-y-5">
+                <h3 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">Platform Highlights</h3>
+                
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
+                    <div className="flex items-center justify-center mb-1.5">
+                      <FileText className="h-4 w-4 text-brand-400" />
+                    </div>
+                    <p className="text-lg font-extrabold text-white">50+</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Mock Tests</p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
+                    <div className="flex items-center justify-center mb-1.5">
+                      <Layers className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <p className="text-lg font-extrabold text-white">8</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">GATE Subjects</p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
+                    <div className="flex items-center justify-center mb-1.5">
+                      <BookOpen className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <p className="text-lg font-extrabold text-white">10+</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Years of PYQs</p>
+                  </div>
+                </div>
 
+                {/* Key Features */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/10">
+                      <Bot className="h-4 w-4 text-brand-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-zinc-200">College Admissions Advisor</p>
+                      <p className="text-[10px] text-zinc-500">Score-based IIT/NIT/IIIT recommendations</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                      <TrendingUp className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-zinc-200">Performance Analytics</p>
+                      <p className="text-[10px] text-zinc-500">Topic-wise accuracy and rank prediction</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+                      <Shield className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-zinc-200">Exam-Grade Environment</p>
+                      <p className="text-[10px] text-zinc-500">Timed tests matching real GATE format</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

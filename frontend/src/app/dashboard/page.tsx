@@ -40,7 +40,7 @@ export default function DashboardPage() {
       const response = await analyticsApi.collegeAdvisor(queryText);
       setChatResponse(response.recommendation);
     } catch (err: any) {
-      setChatResponse("### ❌ Error\n\nFailed to receive response from College Advisor. Please verify that the backend server is online.");
+      setChatResponse("### Error\n\nFailed to receive response from College Advisor. Please verify that the backend server is online.");
     } finally {
       setChatLoading(false);
     }
@@ -207,19 +207,19 @@ export default function DashboardPage() {
                           onClick={() => { setChatQuery("Which college can I refer to?"); handleAskAdvisor("Which college can I refer to?"); }}
                           className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
                         >
-                          🔍 "Which college can I refer to?"
+                          "Which college can I refer to?"
                         </button>
                         <button 
                           onClick={() => { setChatQuery("Can I get into IITs with my current average score?"); handleAskAdvisor("Can I get into IITs with my current average score?"); }}
                           className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
                         >
-                          🏫 "What about IITs?"
+                          "What about IITs?"
                         </button>
                         <button 
                           onClick={() => { setChatQuery("What NIT options do I have?"); handleAskAdvisor("What NIT options do I have?"); }}
                           className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-bold text-zinc-400 border border-zinc-800/80 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
                         >
-                          ⚡ "What about NITs?"
+                          "What about NITs?"
                         </button>
                       </div>
                     </div>
