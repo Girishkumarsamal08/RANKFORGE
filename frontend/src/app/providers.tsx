@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store } from '../store';
+import { SidebarProvider } from '../context/SidebarContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -18,7 +19,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <SidebarProvider>
+          {children}
+        </SidebarProvider>
       </QueryClientProvider>
     </Provider>
   );

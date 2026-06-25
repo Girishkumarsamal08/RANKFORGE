@@ -2,14 +2,25 @@
 
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, User, GraduationCap } from 'lucide-react';
+import { LogOut, User, GraduationCap, Menu } from 'lucide-react';
+import { useSidebar } from '../context/SidebarContext';
 
 export default function Navbar() {
   const { user, logoutUser, isAuthenticated } = useAuth();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-zinc-800/80 bg-zinc-950/70 px-6 backdrop-blur-md">
       <div className="flex items-center gap-3">
+        {isAuthenticated && (
+          <button
+            onClick={toggleSidebar}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:bg-zinc-900 hover:border-zinc-700 transition cursor-pointer"
+            title="Toggle Sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
         <div className="flex h-10 w-10 overflow-hidden items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 shadow-sm">
           <img src="/logo.jpeg" alt="RANKFORGE Logo" className="h-full w-full object-cover" />
         </div>
