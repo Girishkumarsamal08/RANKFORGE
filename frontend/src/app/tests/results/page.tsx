@@ -54,13 +54,13 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent">
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full h-full">
           <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-white">Attempt Report Card</h1>
@@ -204,7 +204,7 @@ export default function ResultsPage() {
                       </p>
                     </div>
                     <div className="mt-4 border-t border-zinc-905 pt-2 text-[10px] text-zinc-400">
-                      Your All India Rank (AIR) standing: <strong className="text-white">#{latestAttempt.rankEstimated ?? 9999}</strong>
+                      Your All India Rank (AIR) standing: <strong className="text-white">AIR ~{latestAttempt.rankEstimated ?? 9999}</strong>
                     </div>
                   </div>
 

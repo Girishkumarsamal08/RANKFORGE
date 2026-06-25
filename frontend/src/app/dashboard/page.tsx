@@ -91,13 +91,13 @@ export default function DashboardPage() {
   if (!isAuthenticated || !user) return null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent">
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full h-full">
           {/* Header section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
                 />
                 <SnapshotCard
                   title="Estimated AIR"
-                  value={analytics.stats.currentRank ? `#${analytics.stats.currentRank}` : 'N/A'}
+                  value={analytics.stats.currentRank ? `AIR ~${analytics.stats.currentRank}` : 'N/A'}
                   icon={Target}
                   description="Projected All India Rank"
                 />

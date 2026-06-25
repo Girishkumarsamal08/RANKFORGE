@@ -72,13 +72,13 @@ export default function StartTestPage() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent">
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full h-full">
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
             <p className="text-zinc-400 text-sm mt-1">Select and configure your active testing workspace.</p>

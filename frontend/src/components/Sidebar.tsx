@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, BarChart2, BookOpen } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, BookOpen, HelpCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Sidebar() {
@@ -29,6 +29,11 @@ export default function Sidebar() {
       label: 'Performance Analysis',
       href: '/tests/results',
       icon: BarChart2,
+    },
+    {
+      label: 'About RANKFORGE',
+      href: '/about',
+      icon: HelpCircle,
     },
   ];
 

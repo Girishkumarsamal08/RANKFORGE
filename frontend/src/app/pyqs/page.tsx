@@ -109,13 +109,13 @@ export default function PYQLibraryPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent">
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-5xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-5xl mx-auto w-full h-full">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
