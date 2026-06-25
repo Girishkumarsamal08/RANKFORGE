@@ -31,6 +31,23 @@ export default function TestAttemptPage() {
   const [natValue, setNatValue] = useState('');
   const [isFsActive, setIsFsActive] = useState(true);
 
+  // Refs for tracking dynamic state to prevent stale closures and unwanted useEffect triggers
+  const answersRef = React.useRef(answers);
+  const timesSpentRef = React.useRef(timesSpent);
+  const submittingRef = React.useRef(submitting);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    timesSpentRef.current = timesSpent;
+  }, [timesSpent]);
+
+  useEffect(() => {
+    submittingRef.current = submitting;
+  }, [submitting]);
+
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [showWarningModal, setShowWarningModal] = useState(false);
@@ -38,13 +55,13 @@ export default function TestAttemptPage() {
   const [serverCredibilityScore, setServerCredibilityScore] = useState(100);
 
   const handleViolation = async (eventType: string, details: string) => {
-    if (submitting || !attemptId) return;
+    if (submittingRef.current || !attemptId) return;
 
     // Map Redux answers map into standard server payload format
-    const formattedAnswers = Object.keys(timesSpent).map((qId) => ({
+    const formattedAnswers = Object.keys(timesSpentRef.current).map((qId) => ({
       questionId: qId,
-      answerSelected: answers[qId] || '',
-      timeSpentSeconds: timesSpent[qId] || 0,
+      answerSelected: answersRef.current[qId] || '',
+      timeSpentSeconds: timesSpentRef.current[qId] || 0,
     }));
 
     try {
@@ -62,6 +79,7 @@ export default function TestAttemptPage() {
       if (autoSubmitted) {
         setWarningMessage('Critical security violation! You have exceeded the maximum of 3 warnings. Your exam is being automatically submitted.');
         setShowWarningModal(true);
+        submittingRef.current = true;
         setSubmitting(true);
         setTimeout(() => {
           router.push('/tests/results');
@@ -132,6 +150,8 @@ export default function TestAttemptPage() {
   }, [currentQuestionIndex, questions, answers]);
 
   // 3. Anti-Cheat Monitoring (Visibility, Focus & Fullscreen)
+  // Dependencies are empty of dynamic values, relying instead on refs to prevent 
+  // triggering cleanup functions on answers/timer ticks which caused automatic fullscreen exits.
   useEffect(() => {
     if (!attemptId) return;
 
@@ -163,11 +183,12 @@ export default function TestAttemptPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      // ONLY exit fullscreen if we are actually unmounting the component (navigating away or submission complete)
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
     };
-  }, [attemptId, answers, timesSpent, submitting]);
+  }, [attemptId]);
 
   // 4. Fetch initial remaining time from server and synchronize periodically
   useEffect(() => {
