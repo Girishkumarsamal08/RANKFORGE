@@ -317,64 +317,16 @@ export default function AboutPage() {
             </div>
             
             <div className="flex justify-center items-center">
-              <div className="relative rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-6 shadow-2xl max-w-md w-full space-y-5">
-                <h3 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">Platform Highlights</h3>
-                
-                {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
-                    <div className="flex items-center justify-center mb-1.5">
-                      <FileText className="h-4 w-4 text-brand-400" />
-                    </div>
-                    <p className="text-lg font-extrabold text-white">50+</p>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">Mock Tests</p>
-                  </div>
-                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
-                    <div className="flex items-center justify-center mb-1.5">
-                      <Layers className="h-4 w-4 text-emerald-400" />
-                    </div>
-                    <p className="text-lg font-extrabold text-white">8</p>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">GATE Subjects</p>
-                  </div>
-                  <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/60 p-3 text-center">
-                    <div className="flex items-center justify-center mb-1.5">
-                      <BookOpen className="h-4 w-4 text-amber-400" />
-                    </div>
-                    <p className="text-lg font-extrabold text-white">10+</p>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">Years of PYQs</p>
-                  </div>
-                </div>
-
-                {/* Key Features */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/10">
-                      <Bot className="h-4 w-4 text-brand-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-200">College Admissions Advisor</p>
-                      <p className="text-[10px] text-zinc-500">Score-based IIT/NIT/IIIT recommendations</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <TrendingUp className="h-4 w-4 text-emerald-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-200">Performance Analytics</p>
-                      <p className="text-[10px] text-zinc-500">Topic-wise accuracy and rank prediction</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-xl bg-zinc-950/40 border border-zinc-800/50 p-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-                      <Shield className="h-4 w-4 text-amber-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-200">Exam-Grade Environment</p>
-                      <p className="text-[10px] text-zinc-500">Timed tests matching real GATE format</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="relative rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-2 shadow-2xl overflow-hidden group max-w-md w-full">
+                <img 
+                  src="/Rankforge.png" 
+                  alt="RANKFORGE Showcase" 
+                  className="rounded-2xl w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition duration-500 shadow-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/logo.jpeg';
+                  }}
+                />
               </div>
             </div>
           </section>
@@ -419,81 +371,18 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <style jsx>{`
-              @keyframes cardFloat {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-8px); }
-              }
-              @keyframes cardEntrance {
-                0% { opacity: 0; transform: translateY(40px) scale(0.92); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-              }
-              @keyframes glowPulse {
-                0%, 100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0), 0 0 30px rgba(168, 85, 247, 0); }
-                50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 0 40px rgba(168, 85, 247, 0.08); }
-              }
-              @keyframes shimmer {
-                0% { background-position: -200% 0; }
-                100% { background-position: 200% 0; }
-              }
-              .profile-card {
-                animation: cardEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-                opacity: 0;
-              }
-              .profile-card:nth-child(2) {
-                animation-delay: 0.2s;
-              }
-              .profile-card:hover {
-                animation: cardFloat 3s ease-in-out infinite;
-                box-shadow: 0 0 25px rgba(168, 85, 247, 0.18), 0 0 50px rgba(168, 85, 247, 0.07), 0 20px 60px rgba(0, 0, 0, 0.4);
-              }
-              .profile-card::before {
-                content: '';
-                position: absolute;
-                inset: 0;
-                border-radius: inherit;
-                padding: 1px;
-                background: linear-gradient(135deg, transparent 40%, rgba(168, 85, 247, 0.3) 50%, transparent 60%);
-                background-size: 200% 200%;
-                -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-                mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-                -webkit-mask-composite: xor;
-                mask-composite: exclude;
-                opacity: 0;
-                transition: opacity 0.5s ease;
-              }
-              .profile-card:hover::before {
-                opacity: 1;
-                animation: shimmer 2s linear infinite;
-              }
-              .profile-avatar {
-                transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-              }
-              .profile-card:hover .profile-avatar {
-                transform: scale(1.1) rotate(-2deg);
-                box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.1);
-              }
-              .social-link {
-                transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-              }
-              .social-link:hover {
-                transform: translateY(-3px) scale(1.15);
-                box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
-              }
-            `}</style>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               {team.map((member, idx) => (
                 <div 
                   key={idx} 
-                  className="profile-card relative group rounded-2xl border border-zinc-800/85 bg-zinc-900/35 p-6 text-center space-y-5 hover:bg-zinc-900/60 hover:border-brand-500/40 shadow-md flex flex-col justify-between cursor-pointer"
-                  style={{ transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  className="group rounded-2xl border border-zinc-800/85 bg-zinc-900/35 p-6 text-center space-y-5 shadow-md flex flex-col justify-between cursor-pointer transition-all duration-400 ease-out hover:scale-[1.04] hover:shadow-xl hover:shadow-brand-500/5 hover:border-zinc-700"
                 >
                   <div className="space-y-4">
-                    <div className="profile-avatar relative mx-auto h-28 w-28 rounded-2xl overflow-hidden border-2 border-zinc-850 bg-zinc-950 shadow-md">
+                    <div className="relative mx-auto h-28 w-28 rounded-2xl overflow-hidden border-2 border-zinc-850 bg-zinc-950 shadow-md transition-all duration-400 group-hover:border-brand-500/40 group-hover:shadow-lg group-hover:shadow-brand-500/10">
                       <img 
                         src={member.image} 
                         alt={member.name} 
-                        className="h-full w-full object-cover filter saturate-75 group-hover:saturate-100 transition duration-500"
+                        className="h-full w-full object-cover brightness-75 group-hover:brightness-110 group-hover:scale-105 transition-all duration-400"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=18181b&color=a855f7&size=128`;
@@ -511,7 +400,7 @@ export default function AboutPage() {
                       href={member.github} 
                       target="_blank" 
                       rel="noreferrer" 
-                      className="social-link flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-brand-600/20 hover:text-brand-400 hover:border-brand-500/50"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 transition-all duration-300 hover:bg-brand-600/20 hover:text-brand-400 hover:border-brand-500/50 hover:-translate-y-0.5"
                       title="GitHub"
                     >
                       <Github className="h-4.5 w-4.5" />
@@ -520,7 +409,7 @@ export default function AboutPage() {
                       href={member.linkedin} 
                       target="_blank" 
                       rel="noreferrer" 
-                      className="social-link flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/50"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 transition-all duration-300 hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/50 hover:-translate-y-0.5"
                       title="LinkedIn"
                     >
                       <Linkedin className="h-4.5 w-4.5" />
@@ -529,7 +418,7 @@ export default function AboutPage() {
                       href={member.website} 
                       target="_blank" 
                       rel="noreferrer" 
-                      className="social-link flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-emerald-600/20 hover:text-emerald-400 hover:border-emerald-500/50"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 transition-all duration-300 hover:bg-emerald-600/20 hover:text-emerald-400 hover:border-emerald-500/50 hover:-translate-y-0.5"
                       title="Website"
                     >
                       <Globe className="h-4.5 w-4.5" />
