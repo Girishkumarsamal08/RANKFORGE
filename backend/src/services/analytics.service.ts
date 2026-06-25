@@ -98,7 +98,7 @@ export class AnalyticsService {
       const response = await axios.post(`${AI_ENGINE_URL}/api/weak-topics`, {
         branch: attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS',
         answers: answersPayload
-      });
+      }, { timeout: 3000 });
       aiAnalysis = response.data;
     } catch (err: any) {
       console.error('Failed to get weak topics from AI engine, generating fallback:', err.message);
@@ -157,7 +157,12 @@ export class AnalyticsService {
         average_time_seconds: round(val.time / val.total, 1),
         recommendation_priority: accuracy < 0.6 ? 'HIGH' : accuracy < 0.8 ? 'MEDIUM' : 'LOW'
       };
-    }).sort((a, b) => (a.recommendation_priority === 'HIGH' ? -1 : 1));
+    }).sort((a, b) => {
+      const priorityOrder: Record<string, number> = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+      const priorityDiff = (priorityOrder[b.recommendation_priority] || 0) - (priorityOrder[a.recommendation_priority] || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.accuracy - b.accuracy;
+    });
   }
 
   async getCollegeRecommendations(userId: string, query: string) {
@@ -188,7 +193,7 @@ export class AnalyticsService {
         score: avgScore,
         branch,
         query
-      });
+      }, { timeout: 5000 });
       return response.data;
     } catch (err: any) {
       console.error('Failed to contact AI Engine for college advisor:', err.message);

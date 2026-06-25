@@ -1,22 +1,65 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { FileText, Download, Eye, AlertCircle, BookOpen } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { initTest } from '../../features/testSlice';
+import { testsApi } from '../../services/api';
+import { FileText, Download, Eye, AlertCircle, BookOpen, Play, Loader2 } from 'lucide-react';
 
 export default function PYQLibraryPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
+  const [loadingYear, setLoadingYear] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
     }
   }, [isAuthenticated, router]);
+
+  const handleStartExam = async (year: string) => {
+    // Request fullscreen mode first
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        throw new Error('Fullscreen API not supported by browser.');
+      }
+    } catch (err) {
+      alert('Fullscreen mode is mandatory to start the mock test. Please allow fullscreen permission.');
+      return;
+    }
+
+    setLoadingYear(year);
+    try {
+      // Initialize GATE CS mock test
+      const response = await testsApi.start(`gate-cs-${year}`);
+      
+      // Dispatch payload to Redux store
+      dispatch(initTest({
+        attemptId: response.attemptId,
+        questions: response.questions,
+      }));
+
+      // Direct to active attempt page
+      router.push('/tests/attempt');
+    } catch (error: any) {
+      console.error('Failed to initiate mock test:', error);
+      const msg = error.response?.data?.message || 'Error connecting to Server. Verify backend containers are running.';
+      alert(msg);
+      // Exit fullscreen if exam initialization failed
+      if (document.fullscreenElement) {
+        await document.exitFullscreen().catch(() => {});
+      }
+    } finally {
+      setLoadingYear(null);
+    }
+  };
 
   if (!isAuthenticated) return null;
 
@@ -115,23 +158,43 @@ export default function PYQLibraryPage() {
                   <p className="text-xs text-zinc-400 leading-relaxed mb-4">{paper.description}</p>
                 </div>
 
-                <div className="flex gap-2 mt-2 pt-4 border-t border-zinc-800/80">
-                  <a
-                    href={`/pyqs/${paper.filename}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-900 hover:text-white transition cursor-pointer"
+                <div className="flex flex-col sm:flex-row gap-2 mt-2 pt-4 border-t border-zinc-800/85">
+                  <div className="flex gap-2 flex-1">
+                    <a
+                      href={`/pyqs/${paper.filename}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-900 hover:text-white transition cursor-pointer"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View</span>
+                    </a>
+                    <a
+                      href={`/pyqs/${paper.filename}`}
+                      download
+                      className="flex items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-900 hover:text-white transition cursor-pointer"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </div>
+                  
+                  <button
+                    onClick={() => handleStartExam(paper.year)}
+                    disabled={loadingYear !== null}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50 transition cursor-pointer"
                   >
-                    <Eye className="h-4 w-4" />
-                    <span>View Paper</span>
-                  </a>
-                  <a
-                    href={`/pyqs/${paper.filename}`}
-                    download
-                    className="flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700 transition cursor-pointer"
-                  >
-                    <Download className="h-4 w-4" />
-                  </a>
+                    {loadingYear === paper.year ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Starting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 fill-current" />
+                        <span>Take Mock Exam</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             ))}

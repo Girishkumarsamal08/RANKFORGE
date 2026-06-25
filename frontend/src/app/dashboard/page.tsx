@@ -312,8 +312,18 @@ export default function DashboardPage() {
                 <p className="text-xs text-zinc-400 mb-5">Ranked by accuracy and review priority</p>
 
                 {analytics.weakTopics.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/40">
-                    Attempt a test paper to load topic-wise diagnostics.
+                  <div className="text-center py-10 px-4 border border-dashed border-zinc-850 rounded-xl bg-zinc-950/45 max-w-xl mx-auto my-2">
+                    <AlertTriangle className="h-7 w-7 text-amber-500/80 mx-auto mb-3 animate-pulse" />
+                    <h4 className="text-sm font-bold text-zinc-200 mb-1.5">No Diagnostic Data Available</h4>
+                    <p className="text-xs text-zinc-450 leading-relaxed mb-4">
+                      Concept Vulnerabilities tracks your accuracy and average solving speed across core GATE subjects (Engineering Mathematics, General Aptitude, and Computer Science) to pinpoint weak areas. Complete a mock test to view detailed analytics.
+                    </p>
+                    <button
+                      onClick={() => router.push('/tests/start')}
+                      className="rounded-xl bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700 transition cursor-pointer"
+                    >
+                      Attempt a Mock Paper
+                    </button>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -355,24 +365,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Actionable Recommendations Panel */}
-              <div className="rounded-2xl border border-brand-900/30 bg-brand-950/15 p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5 text-brand-400" />
-                  <h3 className="text-base font-bold text-white">RAG AI Learning Recommendations</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {analytics.recommendations.map((rec, idx) => (
-                    <div key={idx} className="flex gap-3 rounded-xl bg-zinc-900/50 p-4 border border-zinc-800/80 shadow-sm">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-950/40 text-brand-400 text-xs font-bold border border-brand-900/20">
-                        {idx + 1}
-                      </div>
-                      <p className="text-xs text-zinc-300 leading-relaxed font-medium">{rec}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* AI College Admissions Advisor Chat Panel */}
               <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm mt-6">
