@@ -17,7 +17,8 @@ import {
   BarChart2,
   AlertTriangle,
   Github,
-  Linkedin
+  Linkedin,
+  Globe
 } from 'lucide-react';
 
 export default function AboutPage() {
@@ -214,49 +215,48 @@ export default function AboutPage() {
 
   const team = [
     {
+      name: 'Girish Kumar Samal',
+      role: 'Founder & Partner',
+      image: '/Girish.png',
+      linkedin: 'https://www.linkedin.com/in/girish-kumar-samal08/',
+      github: 'https://github.com/Girishkumarsamal08',
+      website: 'https://www.girishkumar.dev/'
+    },
+    {
       name: 'Swayamsuchee Pradhan',
-      role: 'Front-End & Back-End Developer',
-      image: 'https://github.com/SwayamsucheePradhan09.png',
-      linkedin: 'https://www.linkedin.com/in/swayamsuchee-pradhan-9980b4354/',
-      github: 'https://github.com/SwayamsucheePradhan09'
-    },
-    {
-      name: 'Mohammad Faiz',
-      role: 'Front-End Developer',
-      image: 'https://github.com/Mohd-FaiZ-Jr.png',
-      linkedin: 'https://www.linkedin.com/in/mohammad-faiz-36224a21b/',
-      github: 'https://github.com/Mohd-FaiZ-Jr'
-    },
-    {
-      name: 'Sritish Kumar Gouda',
-      role: 'Back-End Developer',
-      image: 'https://github.com/Sritish-Kumar.png',
-      linkedin: 'https://github.com/Sritish-Kumar',
-      github: 'https://github.com/Sritish-Kumar'
+      role: 'Co-Founder & Partner',
+      image: '/Swayamsuchee.jpeg',
+      linkedin: 'https://www.linkedin.com/in/swayamsuchee-pradhan09/',
+      github: 'https://github.com/SwayamsucheePradhan09',
+      website: 'https://www.swayamsuchee.dev/'
     }
   ];
 
   const faqs = [
     {
-      q: 'Is RANKFORGE free to use?',
-      a: 'Yes, RANKFORGE is completely free for GATE CS aspirants, with zero charges for mock assessments, reports, and AI admissions advice.'
+      q: 'How does the Estimated All India Rank (AIR) calculate my standing?',
+      a: 'RANKFORGE models your scaled mock marks against a normal distribution derived from over 700,000 historical candidates. This gives you a statistical projection of where you stand relative to the national average.'
     },
     {
-      q: 'What is Concept Vulnerability?',
-      a: 'Concept Vulnerability classifies topics where your mock test accuracy falls below average standard thresholds. Moving this feature to the start portal helps you see what to revise before launching a test.'
+      q: 'Why does the mock test require fullscreen mode to start?',
+      a: 'To guarantee strict examination realism and logs focus metrics. Real GATE tests operate on restricted terminal clients; fullscreen constraints help prepare you for this exam environment.'
     },
     {
-      q: 'How does the Year-Specific Mock Exam work?',
-      a: 'When you select a PYQ year (2020–2025) and click "Take Mock Exam", the database dynamically generates 6 syllabus-authentic questions for that year and spins up the mock exam engine.'
+      q: 'Will my college admissions verdict change as I attempt more tests?',
+      a: 'Absolutely. The AI Admissions Advisor evaluates your cumulative historical performance. As you solve more exams, improve accuracies, and reduce your estimated rank range, it dynamically updates referrals for IISc, IITs, and NITs.'
     },
     {
-      q: 'Why does the AI College Advisor sometimes load slowly?',
-      a: 'The AI engine is hosted on Render which goes into cold-start sleep when inactive. We implemented a 3-second timeout that automatically falls back to local DB statistics to keep your experience snappy.'
+      q: 'What do the different syllabus weightage cards represent?',
+      a: 'They follow the exact official GATE blueprint: General Aptitude 15%, Engineering Mathematics 13%, and Core CS subjects 72%. Use this breakdown to direct study time toward the highest-yield chapters.'
+    },
+    {
+      q: 'Can I review details of my concept weaknesses?',
+      a: 'Yes, the Concept Vulnerabilities section highlights specific chapters where your scaling drops below the standard deviation target, detailing exactly what topics require revision.'
     }
   ];
 
   return (
-    <div className="relative min-h-screen w-full bg-[#050508] text-zinc-100 overflow-x-hidden font-sans">
+    <div className="relative min-h-screen w-full bg-[#050508] text-zinc-100 overflow-x-hidden font-sans flex flex-col justify-between">
       {/* Background Canvas */}
       <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-40" />
 
@@ -315,9 +315,14 @@ export default function AboutPage() {
             <div className="flex justify-center items-center">
               <div className="relative rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-2 shadow-2xl overflow-hidden group max-w-md w-full">
                 <img 
-                  src="/rankforge_hero.png" 
+                  src="/Rankforge.png" 
                   alt="RANKFORGE Showcase" 
-                  className="rounded-2xl w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition duration-500 shadow-lg" 
+                  className="rounded-2xl w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition duration-500 shadow-lg"
+                  onError={(e) => {
+                    // Fallback to standard logo if Rankforge.png is missing
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/logo.jpeg';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent pointer-events-none" />
               </div>
@@ -355,29 +360,29 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* Team Section */}
+          {/* Partners Section */}
           <section className="space-y-12">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Our Developers</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Platform Partners</h2>
               <p className="text-xs md:text-sm text-zinc-400">
-                RANKFORGE is built with care, logic, and purpose by a dedicated engineering squad. Connect with the creators of the platform.
+                RANKFORGE is built and maintained with care, logic, and purpose by its founding partners. Connect with the creators of the platform.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               {team.map((member, idx) => (
                 <div 
                   key={idx} 
                   className="group rounded-2xl border border-zinc-800/85 bg-zinc-900/35 p-6 text-center space-y-5 transition hover:bg-zinc-900/60 hover:border-zinc-700 shadow-md flex flex-col justify-between"
                 >
                   <div className="space-y-4">
-                    <div className="relative mx-auto h-24 w-24 rounded-2xl overflow-hidden border border-zinc-800 shadow-md group-hover:border-brand-500/50 transition">
+                    <div className="relative mx-auto h-28 w-28 rounded-2xl overflow-hidden border border-zinc-850 bg-zinc-950 shadow-md group-hover:border-brand-500/50 transition">
                       <img 
                         src={member.image} 
                         alt={member.name} 
                         className="h-full w-full object-cover filter saturate-75 group-hover:saturate-100 transition duration-300"
                         onError={(e) => {
-                          // Fallback to standard avatar icon
+                          // Fallback to initial name avatars if Girish.png or Swayamsuchee.png not loaded yet
                           const target = e.target as HTMLImageElement;
                           target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=18181b&color=a855f7&size=128`;
                         }}
@@ -385,7 +390,7 @@ export default function AboutPage() {
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-white group-hover:text-brand-400 transition-colors">{member.name}</h3>
-                      <p className="text-xs text-zinc-400 mt-1">{member.role}</p>
+                      <p className="text-xs text-zinc-450 mt-1">{member.role}</p>
                     </div>
                   </div>
                   
@@ -395,6 +400,7 @@ export default function AboutPage() {
                       target="_blank" 
                       rel="noreferrer" 
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-zinc-900 hover:text-white transition"
+                      title="GitHub"
                     >
                       <Github className="h-4.5 w-4.5" />
                     </a>
@@ -403,8 +409,18 @@ export default function AboutPage() {
                       target="_blank" 
                       rel="noreferrer" 
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-zinc-900 hover:text-white transition"
+                      title="LinkedIn"
                     >
                       <Linkedin className="h-4.5 w-4.5" />
+                    </a>
+                    <a 
+                      href={member.website} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-850 hover:bg-zinc-900 hover:text-white transition"
+                      title="Website"
+                    >
+                      <Globe className="h-4.5 w-4.5" />
                     </a>
                   </div>
                 </div>
@@ -425,7 +441,7 @@ export default function AboutPage() {
               {faqs.map((faq, idx) => (
                 <details 
                   key={idx} 
-                  className="group rounded-xl border border-zinc-800 bg-zinc-900/25 p-5 shadow-sm transition hover:border-zinc-700/80 cursor-pointer"
+                  className="group rounded-xl border border-zinc-850 bg-zinc-900/25 p-5 shadow-sm transition hover:border-zinc-700/80 cursor-pointer"
                 >
                   <summary className="flex justify-between items-center text-sm font-semibold text-zinc-200 group-open:text-brand-400 transition-colors">
                     <span>{faq.q}</span>
@@ -539,9 +555,67 @@ export default function AboutPage() {
         </main>
 
         {/* Footer */}
-        <footer className="mt-auto border-t border-zinc-900 bg-zinc-950/80 py-6 text-center text-xs text-zinc-500">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-3">
-            <p>© {new Date().getFullYear()} RANKFORGE. Community project built for GATE aspirants.</p>
+        <footer className="border-t border-zinc-850 bg-zinc-950/90 py-12 text-xs text-zinc-450 mt-20">
+          <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* About Column */}
+            <div className="space-y-4 md:col-span-2 text-left">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-7 w-7 overflow-hidden items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm">
+                  <img src="/logo.jpeg" alt="RANKFORGE Logo" className="h-full w-full object-cover" />
+                </div>
+                <span className="text-sm font-bold tracking-tight text-white">
+                  RANK<span className="bg-gradient-to-r from-brand-500 to-indigo-500 bg-clip-text text-transparent">FORGE</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 leading-relaxed max-w-sm">
+                RANKFORGE is an AI-powered diagnostic platform engineered specifically for GATE computer science aspirants to track focus metrics, estimate All India Ranks (AIR), and receive personalized admissions counseling.
+              </p>
+            </div>
+
+            {/* Quick Links Column */}
+            <div className="space-y-4 text-left">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Navigation</h4>
+              <ul className="space-y-2 text-[11px]">
+                <li>
+                  <Link href={isAuthenticated ? '/dashboard' : '/login'} className="hover:text-brand-400 transition">
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tests/start" className="hover:text-brand-400 transition">
+                    GATE Mock Tests
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pyqs" className="hover:text-brand-400 transition">
+                    GATE PYQ Library
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Partners Column */}
+            <div className="space-y-4 text-left">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Founders</h4>
+              <div className="space-y-3">
+                <div className="text-[11px]">
+                  <a href="https://www.girishkumar.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
+                    Girish Kumar Samal
+                  </a>
+                  <span className="text-[10px] text-zinc-500 block">Founder & Partner</span>
+                </div>
+                <div className="text-[11px]">
+                  <a href="https://www.swayamsuchee.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
+                    Swayamsuchee Pradhan
+                  </a>
+                  <span className="text-[10px] text-zinc-500 block">Co-Founder & Partner</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-6xl mx-auto px-6 border-t border-zinc-900 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
+            <p>© {new Date().getFullYear()} RANKFORGE. All rights reserved.</p>
             <div className="flex gap-4">
               <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
               <span className="text-zinc-800">|</span>
