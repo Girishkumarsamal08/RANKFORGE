@@ -10,16 +10,108 @@ import Sidebar from '../../../components/Sidebar';
 import { testsApi, analyticsApi } from '../../../services/api';
 import { initTest } from '../../../features/testSlice';
 import { DashboardAnalytics } from '../../../types';
-import { FileText, Play, ShieldAlert, Award, Loader2, AlertTriangle } from 'lucide-react';
+import { FileText, Play, ShieldAlert, Award, Loader2, AlertTriangle, BookOpen } from 'lucide-react';
+
+const GATE_BRANCH_MAP: Record<string, string> = {
+  AE: 'Aerospace Engineering (AE)',
+  AG: 'Agricultural Engineering (AG)',
+  AR: 'Architecture and Planning (AR)',
+  BM: 'Biomedical Engineering (BM)',
+  BT: 'Biotechnology (BT)',
+  CE: 'Civil Engineering (CE)',
+  CH: 'Chemical Engineering (CH)',
+  CS: 'Computer Science and Engineering (CS)',
+  DA: 'Data Science and Artificial Intelligence (DA)',
+  EC: 'Electronics and Communication Engineering (EC)',
+  EE: 'Electrical Engineering (EE)',
+  ES: 'Environmental Science and Engineering (ES)',
+  EY: 'Ecology and Evolution (EY)',
+  GE: 'Geomatics Engineering (GE)',
+  GG: 'Geology and Geophysics (GG)',
+  IN: 'Instrumentation Engineering (IN)',
+  MA: 'Mathematics (MA)',
+  ME: 'Mechanical Engineering (ME)',
+  MN: 'Mining Engineering (MN)',
+  MT: 'Metallurgical Engineering (MT)',
+  NM: 'Naval Architecture and Marine Engineering (NM)',
+  PE: 'Petroleum Engineering (PE)',
+  PH: 'Physics (PH)',
+  PI: 'Production and Industrial Engineering (PI)',
+  ST: 'Statistics (ST)',
+  TF: 'Textile Engineering and Fibre Science (TF)',
+  XE: 'Engineering Sciences (XE)',
+  XH: 'Humanities and Social Sciences (XH)',
+  XL: 'Life Sciences (XL)'
+};
+
+const BRANCH_BLUEPRINTS: Record<string, Array<{ name: string; weight: string }>> = {
+  CS: [
+    { name: 'Programming & Data Structures', weight: '~10-12%' },
+    { name: 'Algorithms (Greedy, Dynamic)', weight: '~10-12%' },
+    { name: 'TOC, Parsing & Compiler', weight: '~12-14%' },
+    { name: 'OS & Databases (SQL, Normal Forms)', weight: '~16-18%' },
+    { name: 'Networks (TCP/IP), COA & Logic', weight: '~18-20%' }
+  ],
+  EC: [
+    { name: 'Network Theory', weight: '~10-12%' },
+    { name: 'Signals & Systems', weight: '~10-12%' },
+    { name: 'Electronic Devices & Analog Circuits', weight: '~14-16%' },
+    { name: 'Digital Circuits & Control Systems', weight: '~16-18%' },
+    { name: 'Communications & Electromagnetics', weight: '~18-20%' }
+  ],
+  DA: [
+    { name: 'Probability and Statistics', weight: '15-18%' },
+    { name: 'Linear Algebra & Calculus', weight: '12-15%' },
+    { name: 'Programming, DS and Algorithms', weight: '15-20%' },
+    { name: 'Databases & Machine Learning', weight: '20-25%' },
+    { name: 'Artificial Intelligence', weight: '10-15%' }
+  ]
+};
+
+const BRANCH_SUBJECT_TOPICS: Record<string, string[]> = {
+  AE: ['Aerodynamics', 'Flight Mechanics', 'Space Dynamics', 'Propulsion', 'Aerospace Structures'],
+  AG: ['Farm Machinery', 'Soil and Water Conservation', 'Agricultural Processing', 'Hydrology'],
+  AR: ['Architecture Design', 'Building Materials', 'Urban Planning', 'Housing & Infrastructure'],
+  BM: ['Biomedical Instrumentation', 'Biomaterials', 'Biomechanics', 'Medical Imaging Systems'],
+  BT: ['Recombinant DNA Technology', 'Bioinformatics', 'Bioprocess Engineering', 'Microbiology'],
+  CE: ['Structural Engineering', 'Geotechnical Engineering', 'Water Resources', 'Environmental Engineering', 'Transportation'],
+  CH: ['Process Calculations', 'Fluid Mechanics & Mechanical Operations', 'Heat Transfer', 'Mass Transfer', 'Chemical Reaction Engineering'],
+  EE: ['Electric Circuits', 'Electromagnetic Fields', 'Signals & Systems', 'Electrical Machines', 'Power Systems', 'Control Systems', 'Power Electronics'],
+  ES: ['Environmental Chemistry', 'Environmental Microbiology', 'Water Supply & Wastewater', 'Solid Waste Management', 'Air & Noise Pollution'],
+  EY: ['Ecology', 'Evolutionary Biology', 'Behavioral Ecology', 'Systematics & Biogeography'],
+  GE: ['Remote Sensing', 'GIS', 'GPS & GNSS', 'Surveying & Photogrammetry'],
+  GG: ['Earth and Planetary System', 'Geology', 'Geophysics', 'Structural Geology', 'Seismology'],
+  IN: ['Sensors & Industrial Instrumentation', 'Optical Instrumentation', 'Signals & Systems', 'Control Systems', 'Measurements'],
+  MA: ['Algebra', 'Real Analysis', 'Complex Analysis', 'Functional Analysis', 'Numerical Analysis'],
+  ME: ['Applied Mechanics & Design', 'Fluid Mechanics & Thermal Sciences', 'Manufacturing & Industrial Engineering'],
+  MN: ['Mine Development & Surveying', 'Geomechanics & Ground Control', 'Mining Methods & Systems', 'Mine Ventilation'],
+  MT: ['Thermodynamics & Kinetics', 'Physical Metallurgy', 'Mechanical Metallurgy', 'Extraction Metallurgy'],
+  NM: ['Ship Design', 'Hydrostatics & Stability', 'Ship Structures', 'Ship Resistance & Propulsion'],
+  PE: ['Petroleum Exploration', 'Drilling Engineering', 'Production Operations', 'Reservoir Engineering'],
+  PH: ['Mathematical Physics', 'Classical Mechanics', 'Electromagnetic Theory', 'Quantum Mechanics', 'Thermodynamics & Statistical Physics'],
+  PI: ['General Engineering', 'Manufacturing Processes', 'Operational Research', 'Quality & Reliability'],
+  ST: ['Probability', 'Stochastic Processes', 'Statistical Inference', 'Multivariate Analysis', 'Regression Analysis'],
+  TF: ['Textile Fibres', 'Yarn Manufacture', 'Fabric Manufacture', 'Chemical Processing of Textiles'],
+  XE: ['Fluid Mechanics', 'Materials Science', 'Solid Mechanics', 'Thermodynamics'],
+  XH: ['Economics', 'English Linguistics', 'Philosophy', 'Psychology', 'Sociology'],
+  XL: ['Biochemistry', 'Botany', 'Microbiology', 'Zoology', 'Food Technology']
+};
 
 export default function StartTestPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [activeLoadingKey, setActiveLoadingKey] = useState<string | null>(null);
   
   const [selectedYear, setSelectedYear] = useState('2025');
+  const [activeBranch, setActiveBranch] = useState('CS');
+
+  useEffect(() => {
+    if (user?.branch) {
+      setActiveBranch(user.branch);
+    }
+  }, [user]);
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<DashboardAnalytics>({
     queryKey: ['dashboardAnalytics'],
@@ -33,9 +125,8 @@ export default function StartTestPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleStartExam = async (branch: string, mode: string) => {
-    const key = `${branch}-${mode}`;
-    // Request fullscreen mode first
+  const handleStartExam = async (branchCode: string, mode: string) => {
+    const key = `${branchCode}-${mode}`;
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -50,22 +141,18 @@ export default function StartTestPage() {
     setLoading(true);
     setActiveLoadingKey(key);
     try {
-      // Initialize GATE mock test with the chosen configuration
-      const response = await testsApi.start(`gate-${branch}-${selectedYear}-${mode}`);
+      const response = await testsApi.start(`gate-${branchCode.toLowerCase()}-${selectedYear}-${mode}`);
       
-      // Dispatch payload to Redux store
       dispatch(initTest({
         attemptId: response.attemptId,
         questions: response.questions,
       }));
 
-      // Direct to active attempt page
       router.push('/tests/attempt');
     } catch (error: any) {
       console.error('Failed to initiate mock test:', error);
       const msg = error.response?.data?.message || 'Error connecting to Server. Verify backend containers are running.';
       alert(msg);
-      // Exit fullscreen if exam initialization failed
       if (document.fullscreenElement) {
         await document.exitFullscreen().catch(() => {});
       }
@@ -76,7 +163,7 @@ export default function StartTestPage() {
   };
 
   const renderExamCard = (
-    branch: string,
+    branchCode: string,
     mode: string,
     title: string,
     questionsCount: string,
@@ -84,7 +171,7 @@ export default function StartTestPage() {
     maxMarks: string,
     description: string
   ) => {
-    const key = `${branch}-${mode}`;
+    const key = `${branchCode}-${mode}`;
     const isThisLoading = loading && activeLoadingKey === key;
     
     return (
@@ -111,7 +198,7 @@ export default function StartTestPage() {
         </div>
 
         <button
-          onClick={() => handleStartExam(branch, mode)}
+          onClick={() => handleStartExam(branchCode, mode)}
           disabled={loading}
           className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-brand-700 transition disabled:opacity-50 cursor-pointer w-full"
         >
@@ -131,7 +218,21 @@ export default function StartTestPage() {
     );
   };
 
+  const getDynamicBlueprints = (branchCode: string) => {
+    if (BRANCH_BLUEPRINTS[branchCode]) {
+      return BRANCH_BLUEPRINTS[branchCode];
+    }
+    const topics = BRANCH_SUBJECT_TOPICS[branchCode] || ['Core Principles', 'Core Applications', 'Core Systems'];
+    const equalWeight = Math.round(72 / topics.length);
+    return topics.map((t) => ({
+      name: t,
+      weight: `~${equalWeight}%`
+    }));
+  };
+
   if (!isAuthenticated) return null;
+
+  const branchFullName = GATE_BRANCH_MAP[activeBranch] || `${activeBranch} Paper`;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-transparent">
@@ -141,9 +242,27 @@ export default function StartTestPage() {
         <Sidebar />
 
         <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full h-full">
-          <div className="mb-6">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
-            <p className="text-zinc-400 text-sm mt-1">Select your paper and configure your active testing workspace.</p>
+          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
+              <p className="text-zinc-400 text-sm mt-1">Select your paper and configure your active testing workspace.</p>
+            </div>
+            
+            {/* Branch selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500 font-semibold uppercase">View Paper:</span>
+              <select
+                value={activeBranch}
+                onChange={(e) => setActiveBranch(e.target.value)}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs font-bold text-white outline-none cursor-pointer"
+              >
+                {Object.entries(GATE_BRANCH_MAP).map(([code, name]) => (
+                  <option key={code} value={code} className="bg-zinc-950">
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Year Selection Section */}
@@ -185,41 +304,46 @@ export default function StartTestPage() {
             </div>
           </div>
 
-          {/* Exam Section: Computer Science */}
+          {/* Exam Section */}
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/20">
                 <FileText className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">GATE Computer Science (CS)</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">Algorithms, OS, Databases, Computer Networks, Discrete Math, and more.</p>
+                <h2 className="text-xl font-bold text-white">GATE {branchFullName}</h2>
+                <p className="text-xs text-zinc-500 mt-0.5">Custom mock testing workspace for {branchFullName.split(' (')[0]}.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {renderExamCard('cs', 'ga', 'General Aptitude (GA)', '10 Questions', '30 Minutes', '15.00 Marks', '10 compulsory questions covering verbal, quantitative, analytical, and spatial reasoning.')}
-              {renderExamCard('cs', 'subject', 'Subject Paper (CS)', '55 Questions', '150 Minutes', '85.00 Marks', '55 questions covering Engineering Mathematics and core Computer Science subjects.')}
-              {renderExamCard('cs', 'full', 'Full Mock Exam (CS)', '65 Questions', '180 Minutes', '100.00 Marks', '65 questions combining both GA and core CS sections for the complete actual exam experience.')}
-            </div>
-          </div>
-
-          {/* Exam Section: Electronics & Communication */}
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/20">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">GATE Electronics & Communication (EC)</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">Network Theory, Signals & Systems, Analog & Digital Circuits, Electromagnetics, and more.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {renderExamCard('ec', 'ga', 'General Aptitude (GA)', '10 Questions', '30 Minutes', '15.00 Marks', '10 compulsory questions covering verbal, quantitative, analytical, and spatial reasoning.')}
-              {renderExamCard('ec', 'subject', 'Subject Paper (EC)', '55 Questions', '150 Minutes', '85.00 Marks', '55 questions covering Engineering Mathematics and core Electronics & Communication subjects.')}
-              {renderExamCard('ec', 'full', 'Full Mock Exam (EC)', '65 Questions', '180 Minutes', '100.00 Marks', '65 questions combining both GA and core EC sections for the complete actual exam experience.')}
+              {renderExamCard(
+                activeBranch,
+                'ga',
+                'General Aptitude (GA)',
+                '10 Questions',
+                '30 Minutes',
+                '15.00 Marks',
+                `10 compulsory questions covering verbal, quantitative, analytical, and spatial reasoning for ${activeBranch}.`
+              )}
+              {renderExamCard(
+                activeBranch,
+                'subject',
+                `Subject Paper (${activeBranch})`,
+                '55 Questions',
+                '150 Minutes',
+                '85.00 Marks',
+                `55 questions covering Engineering Mathematics and core ${activeBranch} syllabus topics.`
+              )}
+              {renderExamCard(
+                activeBranch,
+                'full',
+                `Full Mock Exam (${activeBranch})`,
+                '65 Questions',
+                '180 Minutes',
+                '100.00 Marks',
+                `65 questions combining both GA and core ${activeBranch} sections for the complete actual exam experience.`
+              )}
             </div>
           </div>
 
@@ -285,37 +409,23 @@ export default function StartTestPage() {
               </div>
             </div>
 
-            {/* Core Computer Science */}
+            {/* Core Subject Blueprint */}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/25 p-5 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Part 3 (Syllabus)</span>
                 <span className="rounded-lg bg-amber-950/40 border border-amber-900/40 px-2 py-0.5 text-xs font-extrabold text-amber-400">72% Marks</span>
               </div>
-              <h4 className="text-sm font-bold text-white mb-2">Core CS Subjects</h4>
+              <h4 className="text-sm font-bold text-white mb-2">Core {activeBranch} Syllabus</h4>
               <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
-                Programming, Data Structures, Algorithms, TOC, Operating Systems, Databases, Computer Networks, COA, Digital Logic, and Compiler.
+                Key subject weightages and core specifications for target GATE paper {activeBranch}.
               </p>
               <div className="space-y-1.5 text-[10px] text-zinc-300 font-medium">
-                <div className="flex justify-between border-b border-zinc-850/80 pb-1">
-                  <span>Programming & Data Structures</span>
-                  <span className="text-zinc-400 font-mono">~10-12%</span>
-                </div>
-                <div className="flex justify-between border-b border-zinc-850/80 pb-1">
-                  <span>Algorithms (Greedy, Dynamic)</span>
-                  <span className="text-zinc-400 font-mono">~10-12%</span>
-                </div>
-                <div className="flex justify-between border-b border-zinc-850/80 pb-1">
-                  <span>TOC, Parsing & Compiler</span>
-                  <span className="text-zinc-400 font-mono">~12-14%</span>
-                </div>
-                <div className="flex justify-between border-b border-zinc-850/80 pb-1">
-                  <span>OS & Databases (SQL, Normal Forms)</span>
-                  <span className="text-zinc-400 font-mono">~16-18%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Networks (TCP/IP), COA & Logic</span>
-                  <span className="text-zinc-400 font-mono">~18-20%</span>
-                </div>
+                {getDynamicBlueprints(activeBranch).map((bp, idx) => (
+                  <div key={idx} className={`flex justify-between ${idx < getDynamicBlueprints(activeBranch).length - 1 ? 'border-b border-zinc-850/80 pb-1' : ''}`}>
+                    <span>{bp.name}</span>
+                    <span className="text-zinc-400 font-mono">{bp.weight}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -331,14 +441,14 @@ export default function StartTestPage() {
           ) : analytics ? (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm mt-6">
               <h3 className="text-base font-bold text-zinc-100 mb-1">Concept Vulnerabilities</h3>
-              <p className="text-xs text-zinc-450 mb-5">Ranked by accuracy and review priority</p>
+              <p className="text-xs text-zinc-455 mb-5">Ranked by accuracy and review priority</p>
 
               {analytics.weakTopics.length === 0 ? (
                 <div className="text-center py-10 px-4 border border-dashed border-zinc-850 rounded-xl bg-zinc-950/45 max-w-xl mx-auto my-2">
                   <AlertTriangle className="h-7 w-7 text-amber-500/80 mx-auto mb-3 animate-pulse" />
                   <h4 className="text-sm font-bold text-zinc-200 mb-1.5">No Diagnostic Data Available</h4>
-                  <p className="text-xs text-zinc-450 leading-relaxed">
-                    Concept Vulnerabilities tracks your accuracy and average solving speed across core GATE subjects (Engineering Mathematics, General Aptitude, and Computer Science) to pinpoint weak areas. Attempt a test above to begin loading topic-wise diagnostics.
+                  <p className="text-xs text-zinc-455 leading-relaxed">
+                    Concept Vulnerabilities tracks your accuracy and average solving speed across core GATE subjects (Engineering Mathematics, General Aptitude, and {activeBranch}) to pinpoint weak areas. Attempt a test above to begin loading topic-wise diagnostics.
                   </p>
                 </div>
               ) : (

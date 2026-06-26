@@ -3,13 +3,47 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, BarChart2, BookOpen, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, BookOpen, HelpCircle, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useSidebar } from '../context/SidebarContext';
+import { useAuth } from '../hooks/useAuth';
+
+const BRANCH_NAMES: Record<string, string> = {
+  AE: 'Aerospace Eng. (AE)',
+  AG: 'Agricultural Eng. (AG)',
+  AR: 'Architecture & Planning (AR)',
+  BM: 'Biomedical Eng. (BM)',
+  BT: 'Biotechnology (BT)',
+  CE: 'Civil Eng. (CE)',
+  CH: 'Chemical Eng. (CH)',
+  CS: 'Computer Science (CS)',
+  DA: 'Data Science & AI (DA)',
+  EC: 'Electronics & Comm. (EC)',
+  EE: 'Electrical Eng. (EE)',
+  ES: 'Environmental Sci. (ES)',
+  EY: 'Ecology & Evolution (EY)',
+  GE: 'Geomatics Eng. (GE)',
+  GG: 'Geology & Geophysics (GG)',
+  IN: 'Instrumentation Eng. (IN)',
+  MA: 'Mathematics (MA)',
+  ME: 'Mechanical Eng. (ME)',
+  MN: 'Mining Eng. (MN)',
+  MT: 'Metallurgical Eng. (MT)',
+  NM: 'Naval Arch. & Marine (NM)',
+  PE: 'Petroleum Eng. (PE)',
+  PH: 'Physics (PH)',
+  PI: 'Production & Industrial (PI)',
+  ST: 'Statistics (ST)',
+  TF: 'Textile Eng. (TF)',
+  XE: 'Engineering Sciences (XE)',
+  XH: 'Humanities & Social (XH)',
+  XL: 'Life Sciences (XL)'
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Automatically close sidebar on mobile when navigating
@@ -43,11 +77,19 @@ export default function Sidebar() {
       icon: BarChart2,
     },
     {
+      label: 'Profile Settings',
+      href: '/settings',
+      icon: Settings,
+    },
+    {
       label: 'About RANKFORGE',
       href: '/about',
       icon: HelpCircle,
     },
   ];
+
+  const userBranch = user?.branch || 'CS';
+  const branchDisplayName = BRANCH_NAMES[userBranch] || `${userBranch} Paper`;
 
   return (
     <>
@@ -94,7 +136,7 @@ export default function Sidebar() {
             <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Aspirant Goal</span>
           </div>
           <p className="text-xs text-zinc-400 leading-normal">
-            GATE Paper: <strong className="text-zinc-200">Computer Science (CS)</strong>
+            GATE Paper: <strong className="text-zinc-200">{branchDisplayName}</strong>
           </p>
           <p className="text-[10px] text-zinc-500 mt-1">
             Aiming for Top IITs & Premium PSUs.

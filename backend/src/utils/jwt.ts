@@ -7,6 +7,7 @@ interface UserPayload {
   id: string;
   email: string;
   name: string;
+  branch?: string;
   sessionId?: string;
 }
 

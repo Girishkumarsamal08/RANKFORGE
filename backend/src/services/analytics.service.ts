@@ -47,6 +47,11 @@ export class AnalyticsService {
     });
 
     if (attempts.length === 0) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { branch: true }
+      });
+      const userBranch = user?.branch || 'CS';
       return {
         hasAttempts: false,
         stats: {
@@ -58,8 +63,8 @@ export class AnalyticsService {
         recentScores: [],
         weakTopics: [],
         recommendations: [
-          'Take your first Mock Test to generate personalized AI performance analytics!',
-          'Review the syllabus guidelines in the Resource Hub to kickstart your preparation.'
+          `Take your first GATE ${userBranch} Mock Test to generate personalized AI performance analytics!`,
+          `Review the syllabus guidelines in the Resource Hub to kickstart your ${userBranch} preparation.`
         ]
       };
     }
@@ -94,9 +99,14 @@ export class AnalyticsService {
 
     // 4. Query FastAPI AI Engine for Weak Topics and Recommendations
     let aiAnalysis: { weak_topics: any[]; recommendations: string[] } = { weak_topics: [], recommendations: [] };
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { branch: true }
+    });
+    const userBranch = user?.branch || 'CS';
     try {
       const response = await axios.post(`${AI_ENGINE_URL}/api/weak-topics`, {
-        branch: attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS',
+        branch: attempts[0].exam.code.split('-')[1]?.toUpperCase() || userBranch,
         answers: answersPayload
       }, { timeout: 3000 });
       aiAnalysis = response.data;
@@ -178,15 +188,21 @@ export class AnalyticsService {
       }
     });
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { branch: true }
+    });
+    const userBranch = user?.branch || 'CS';
+
     if (attempts.length === 0) {
       return {
-        recommendation: "### College Admissions Advisor\n\nYou haven't completed any mock tests yet. Please attempt at least one GATE mock test from your dashboard so that your performance score can be evaluated, your stream (CS, ME, EC, etc.) identified, and personalized college recommendations generated for you."
+        recommendation: `### College Admissions Advisor\n\nYou haven't completed any mock tests yet. Please attempt at least one GATE ${userBranch} mock test from your dashboard so that your performance score can be evaluated, your stream (${userBranch}) identified, and personalized college recommendations generated for you.`
       };
     }
 
     const scores = attempts.map((a: any) => a.score || 0);
     const avgScore = parseFloat((scores.reduce((a: number, b: number) => a + b, 0) / attempts.length).toFixed(2));
-    const branch = attempts[0].exam.code.split('-')[1]?.toUpperCase() || 'CS';
+    const branch = attempts[0].exam.code.split('-')[1]?.toUpperCase() || userBranch;
 
     // Try the AI Engine first; fall back to rule-based recommendations
     try {

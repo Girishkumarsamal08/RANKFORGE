@@ -103,8 +103,11 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-extrabold tracking-tight text-white">
                 Welcome, {user.name}!
               </h1>
-              <p className="text-zinc-400 text-sm mt-1">
-                Here is your GATE preparation diagnostics overview.
+              <p className="text-zinc-400 text-sm mt-1 flex items-center gap-2 flex-wrap">
+                <span>Here is your GATE preparation diagnostics overview.</span>
+                <span className="inline-flex rounded-lg bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-400 uppercase tracking-wider">
+                  Target: {user.branch || 'CS'}
+                </span>
               </p>
             </div>
             

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { UserRepository } from '../repositories/user.repository';
 import { generateToken } from '../utils/jwt';
-import { registerSchema, loginSchema } from '../validators/auth.validator';
+import { registerSchema, loginSchema, updateProfileSchema } from '../validators/auth.validator';
 import redisClient from '../config/redis';
 import prisma from '../config/db';
 import { TestService } from './test.service';
@@ -27,6 +27,7 @@ export class AuthService {
       email: validated.email,
       password: hashedPassword,
       name: validated.name,
+      branch: validated.branch,
     });
 
     const sessionId = crypto.randomUUID();
@@ -36,6 +37,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      branch: user.branch,
       sessionId,
     });
 
@@ -44,6 +46,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        branch: user.branch,
       },
       token,
     };
@@ -99,6 +102,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      branch: user.branch,
       sessionId,
     });
 
@@ -107,6 +111,48 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        branch: user.branch,
+      },
+      token,
+    };
+  }
+
+  async updateProfile(userId: string, payload: any) {
+    const validated = updateProfileSchema.parse(payload);
+
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const updatedUser = await userRepository.updateUser(userId, {
+      name: validated.name,
+      branch: validated.branch,
+    });
+
+    let sessionId = await redisClient.get(`user:${userId}:active_session`);
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      await redisClient.set(`user:${userId}:active_session`, sessionId);
+    }
+
+    // Invalidate dashboard analytics cache as branch changed
+    await redisClient.del(`dashboard:${userId}`);
+
+    const token = generateToken({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      branch: updatedUser.branch,
+      sessionId,
+    });
+
+    return {
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        branch: updatedUser.branch,
       },
       token,
     };

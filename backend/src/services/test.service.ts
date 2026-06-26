@@ -6,6 +6,38 @@ import redisClient from '../config/redis';
 const testRepository = new TestRepository();
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:8000';
 
+const BRANCH_SUBJECT_TOPICS: Record<string, { subject: string; topics: string[] }> = {
+  AE: { subject: 'Aerospace Engineering', topics: ['Aerodynamics', 'Flight Mechanics', 'Space Dynamics', 'Propulsion', 'Aerospace Structures'] },
+  AG: { subject: 'Agricultural Engineering', topics: ['Farm Machinery', 'Soil and Water Conservation', 'Agricultural Processing', 'Hydrology'] },
+  AR: { subject: 'Architecture and Planning', topics: ['Architecture Design', 'Building Materials', 'Urban Planning', 'Housing & Infrastructure'] },
+  BM: { subject: 'Biomedical Engineering', topics: ['Biomedical Instrumentation', 'Biomaterials', 'Biomechanics', 'Medical Imaging Systems'] },
+  BT: { subject: 'Biotechnology', topics: ['Recombinant DNA Technology', 'Bioinformatics', 'Bioprocess Engineering', 'Microbiology'] },
+  CE: { subject: 'Core Civil Engineering', topics: ['Structural Engineering', 'Geotechnical Engineering', 'Water Resources', 'Environmental Engineering', 'Transportation'] },
+  CH: { subject: 'Chemical Engineering', topics: ['Process Calculations', 'Fluid Mechanics & Mechanical Operations', 'Heat Transfer', 'Mass Transfer', 'Chemical Reaction Engineering'] },
+  CS: { subject: 'Core Computer Science', topics: ['Programming & Data Structures', 'Algorithms', 'Theory of Computation', 'Compiler Design', 'Operating Systems', 'Databases', 'Computer Networks', 'Computer Organization & Architecture', 'Digital Logic'] },
+  DA: { subject: 'Data Science & AI', topics: ['Probability and Statistics', 'Linear Algebra', 'Calculus and Optimization', 'Programming, DS and Algorithms', 'Databases', 'Machine Learning', 'Artificial Intelligence'] },
+  EC: { subject: 'Core Electronics & Communication', topics: ['Network Theory', 'Signals & Systems', 'Electronic Devices', 'Analog Circuits', 'Digital Circuits', 'Control Systems', 'Communications', 'Electromagnetics'] },
+  EE: { subject: 'Electrical Engineering', topics: ['Electric Circuits', 'Electromagnetic Fields', 'Signals & Systems', 'Electrical Machines', 'Power Systems', 'Control Systems', 'Power Electronics'] },
+  ES: { subject: 'Environmental Science', topics: ['Environmental Chemistry', 'Environmental Microbiology', 'Water Supply & Wastewater', 'Solid Waste Management', 'Air & Noise Pollution'] },
+  EY: { subject: 'Ecology and Evolution', topics: ['Ecology', 'Evolutionary Biology', 'Behavioral Ecology', 'Systematics & Biogeography'] },
+  GE: { subject: 'Geomatics Engineering', topics: ['Remote Sensing', 'GIS', 'GPS & GNSS', 'Surveying & Photogrammetry'] },
+  GG: { subject: 'Geology and Geophysics', topics: ['Earth and Planetary System', 'Geology', 'Geophysics', 'Structural Geology', 'Seismology'] },
+  IN: { subject: 'Instrumentation Engineering', topics: ['Sensors & Industrial Instrumentation', 'Optical Instrumentation', 'Signals & Systems', 'Control Systems', 'Measurements'] },
+  MA: { subject: 'Mathematics', topics: ['Algebra', 'Real Analysis', 'Complex Analysis', 'Functional Analysis', 'Numerical Analysis'] },
+  ME: { subject: 'Mechanical Engineering', topics: ['Applied Mechanics & Design', 'Fluid Mechanics & Thermal Sciences', 'Manufacturing & Industrial Engineering'] },
+  MN: { subject: 'Mining Engineering', topics: ['Mine Development & Surveying', 'Geomechanics & Ground Control', 'Mining Methods & Systems', 'Mine Ventilation'] },
+  MT: { subject: 'Metallurgical Engineering', topics: ['Thermodynamics & Kinetics', 'Physical Metallurgy', 'Mechanical Metallurgy', 'Extraction Metallurgy'] },
+  NM: { subject: 'Naval Architecture', topics: ['Ship Design', 'Hydrostatics & Stability', 'Ship Structures', 'Ship Resistance & Propulsion'] },
+  PE: { subject: 'Petroleum Engineering', topics: ['Petroleum Exploration', 'Drilling Engineering', 'Production Operations', 'Reservoir Engineering'] },
+  PH: { subject: 'Physics', topics: ['Mathematical Physics', 'Classical Mechanics', 'Electromagnetic Theory', 'Quantum Mechanics', 'Thermodynamics & Statistical Physics'] },
+  PI: { subject: 'Production & Industrial Engineering', topics: ['General Engineering', 'Manufacturing Processes', 'Operational Research', 'Quality & Reliability'] },
+  ST: { subject: 'Statistics', topics: ['Probability', 'Stochastic Processes', 'Statistical Inference', 'Multivariate Analysis', 'Regression Analysis'] },
+  TF: { subject: 'Textile Engineering', topics: ['Textile Fibres', 'Yarn Manufacture', 'Fabric Manufacture', 'Chemical Processing of Textiles'] },
+  XE: { subject: 'Engineering Sciences', topics: ['Fluid Mechanics', 'Materials Science', 'Solid Mechanics', 'Thermodynamics'] },
+  XH: { subject: 'Humanities & Social Sciences', topics: ['Economics', 'English Linguistics', 'Philosophy', 'Psychology', 'Sociology'] },
+  XL: { subject: 'Life Sciences', topics: ['Biochemistry', 'Botany', 'Microbiology', 'Zoology', 'Food Technology'] },
+};
+
 export class TestService {
   async startTest(userId: string, examCode: string) {
     // 1. Redis active session locking check
@@ -335,75 +367,39 @@ export class TestService {
   // --- Seeding Core questions if DB is fresh ---
   private async seedExamData(examId: string, examCode?: string) {
     const parts = (examCode || '').toLowerCase().split('-');
-    const branch = parts[1] || 'cs'; // 'cs', 'ec'
+    const branch = parts[1] || 'cs';
+    const branchUpper = branch.toUpperCase();
     const year = parts[2] || '2025';
-    const mode = parts[3] || 'full'; // 'ga', 'subject', 'full'
+    const mode = parts[3] || 'full';
 
-    console.log(`Auto-seeding questions for exam identifier: ${examId}, branch: ${branch}, year: ${year}, mode: ${mode}`);
+    console.log(`Auto-seeding questions for exam identifier: ${examId}, branch: ${branchUpper}, year: ${year}, mode: ${mode}`);
     
     // Create subjects
     const subGA = await prisma.subject.create({ data: { name: 'General Aptitude', examId } });
     const subMath = await prisma.subject.create({ data: { name: 'Engineering Mathematics', examId } });
-    const subCoreName = branch === 'ec' ? 'Core Electronics & Communication' : 'Core Computer Science';
+    const subCoreName = BRANCH_SUBJECT_TOPICS[branchUpper]?.subject || `Core ${branchUpper}`;
     const subCore = await prisma.subject.create({ data: { name: subCoreName, examId } });
 
-    // Create topics
+    // Create GA topics
     const topicVerbal = await prisma.topic.create({ data: { name: 'Verbal Aptitude', subjectId: subGA.id } });
     const topicQuant = await prisma.topic.create({ data: { name: 'Quantitative Aptitude', subjectId: subGA.id } });
     const topicAnalytical = await prisma.topic.create({ data: { name: 'Analytical Aptitude', subjectId: subGA.id } });
     const topicSpatial = await prisma.topic.create({ data: { name: 'Spatial Aptitude', subjectId: subGA.id } });
 
+    // Create Math topics
     const topicLinear = await prisma.topic.create({ data: { name: 'Linear Algebra', subjectId: subMath.id } });
     const topicProbability = await prisma.topic.create({ data: { name: 'Probability & Statistics', subjectId: subMath.id } });
     const topicCalculus = await prisma.topic.create({ data: { name: 'Calculus', subjectId: subMath.id } });
     const topicDiscrete = await prisma.topic.create({ data: { name: 'Discrete Mathematics', subjectId: subMath.id } });
 
-    let topicProg: any = null, topicAlgo: any = null, topicTOC: any = null, topicCompiler: any = null, topicOS: any = null, topicDB: any = null, topicNetworks: any = null, topicCOA: any = null, topicDigital: any = null;
-    let tNet: any = null, tSignals: any = null, tDevices: any = null, tAnalog: any = null, tDigital: any = null, tControl: any = null, tComms: any = null, tEM: any = null;
-
-    let topicIds: Record<string, string> = {};
-    if (branch === 'ec') {
-      tNet = await prisma.topic.create({ data: { name: 'Network Theory', subjectId: subCore.id } });
-      tSignals = await prisma.topic.create({ data: { name: 'Signals & Systems', subjectId: subCore.id } });
-      tDevices = await prisma.topic.create({ data: { name: 'Electronic Devices', subjectId: subCore.id } });
-      tAnalog = await prisma.topic.create({ data: { name: 'Analog Circuits', subjectId: subCore.id } });
-      tDigital = await prisma.topic.create({ data: { name: 'Digital Circuits', subjectId: subCore.id } });
-      tControl = await prisma.topic.create({ data: { name: 'Control Systems', subjectId: subCore.id } });
-      tComms = await prisma.topic.create({ data: { name: 'Communications', subjectId: subCore.id } });
-      tEM = await prisma.topic.create({ data: { name: 'Electromagnetics', subjectId: subCore.id } });
-      
-      topicIds = {
-        'Network Theory': tNet.id,
-        'Signals & Systems': tSignals.id,
-        'Electronic Devices': tDevices.id,
-        'Analog Circuits': tAnalog.id,
-        'Digital Circuits': tDigital.id,
-        'Control Systems': tControl.id,
-        'Communications': tComms.id,
-        'Electromagnetics': tEM.id
-      };
-    } else {
-      topicProg = await prisma.topic.create({ data: { name: 'Programming & Data Structures', subjectId: subCore.id } });
-      topicAlgo = await prisma.topic.create({ data: { name: 'Algorithms', subjectId: subCore.id } });
-      topicTOC = await prisma.topic.create({ data: { name: 'Theory of Computation', subjectId: subCore.id } });
-      topicCompiler = await prisma.topic.create({ data: { name: 'Compiler Design', subjectId: subCore.id } });
-      topicOS = await prisma.topic.create({ data: { name: 'Operating Systems', subjectId: subCore.id } });
-      topicDB = await prisma.topic.create({ data: { name: 'Databases', subjectId: subCore.id } });
-      topicNetworks = await prisma.topic.create({ data: { name: 'Computer Networks', subjectId: subCore.id } });
-      topicCOA = await prisma.topic.create({ data: { name: 'Computer Organization & Architecture', subjectId: subCore.id } });
-      topicDigital = await prisma.topic.create({ data: { name: 'Digital Logic', subjectId: subCore.id } });
-      
-      topicIds = {
-        'Programming & Data Structures': topicProg.id,
-        'Algorithms': topicAlgo.id,
-        'Theory of Computation': topicTOC.id,
-        'Compiler Design': topicCompiler.id,
-        'Operating Systems': topicOS.id,
-        'Databases': topicDB.id,
-        'Computer Networks': topicNetworks.id,
-        'Computer Organization & Architecture': topicCOA.id,
-        'Digital Logic': topicDigital.id
-      };
+    // Create Core topics
+    const coreTopicsList = BRANCH_SUBJECT_TOPICS[branchUpper]?.topics || ['Core Principles', 'Core Design', 'Core Applications'];
+    const seededCoreTopics: any[] = [];
+    const coreTopicMap: Record<string, string> = {};
+    for (const tName of coreTopicsList) {
+      const tObj = await prisma.topic.create({ data: { name: tName, subjectId: subCore.id } });
+      seededCoreTopics.push(tObj);
+      coreTopicMap[tName] = tObj.id;
     }
 
     const gaQuestionsData = [
@@ -617,218 +613,219 @@ export class TestService {
       }
     ];
 
-    // High fidelity hand-crafted CS questions
-    const highFidelityCS = [
-      {
-        text: 'Which of the following statements about Quick Sort are correct? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Worst-case time complexity is O(n^2)',
-          'Average-case time complexity is O(n log n)',
-          'It is a stable sorting algorithm',
-          'It is an in-place sorting algorithm'
-        ],
-        correctAnswer: '0,1,3',
-        explanation: 'Quick Sort has worst-case time O(n^2), average O(n log n). It is an in-place algorithm, but it is unstable because elements are swapped out of order.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicAlgo.id
-      },
-      {
-        text: 'Which of the following CPU scheduling algorithms can lead to starvation? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Round Robin',
-          'Shortest Remaining Time First (SRTF)',
-          'First-Come First-Served',
-          'Priority Scheduling (non-preemptive)'
-        ],
-        correctAnswer: '1,3',
-        explanation: 'SRTF can starve long processes if short processes keep arriving. Priority scheduling can starve low-priority processes. RR and FCFS guarantee CPU time to all processes.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicOS.id
-      },
-      {
-        text: 'Which of the following are necessary conditions for deadlock? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Mutual Exclusion',
-          'Hold and Wait',
-          'No Preemption',
-          'Circular Wait'
-        ],
-        correctAnswer: '0,1,2,3',
-        explanation: 'All four are the Coffman conditions: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. Deadlock can occur only if all four hold simultaneously.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicOS.id
-      },
-      {
-        text: 'Which of the following graph traversals can check if a graph contains cycles? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Depth-First Search (DFS)',
-          'Breadth-First Search (BFS)',
-          'Inorder Traversal',
-          'Preorder Traversal'
-        ],
-        correctAnswer: '0,1',
-        explanation: 'DFS (using back edges) and BFS (using cross edges in undirected graphs) can detect cycles. Inorder and preorder traversals are specific to binary trees, which are acyclic.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicAlgo.id
-      },
-      {
-        text: 'Which of the following data structures can be used to implement a priority queue? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Binary Heap',
-          'Balanced Binary Search Tree',
-          'Unsorted Array',
-          'Singly Linked List'
-        ],
-        correctAnswer: '0,1,2,3',
-        explanation: 'All of these can implement a priority queue, though with different complexities. Heaps are O(log n), BSTs are O(log n), unsorted arrays and lists are O(1) insert but O(n) remove-min.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicAlgo.id
-      },
-      {
-        text: 'Which of the following statements about paging are correct? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Paging avoids external fragmentation',
-          'Paging avoids internal fragmentation',
-          'Page table is stored in main memory',
-          'TLB cache hit reduces memory access time'
-        ],
-        correctAnswer: '0,2,3',
-        explanation: 'Paging avoids external fragmentation by allocating fixed-size pages. It can lead to internal fragmentation in the last page frame. The page table is stored in main memory, and TLB speeds up lookup.',
-        marks: 1.0,
-        subjectId: subCore.id,
-        topicId: topicOS.id
-      },
-      {
-        text: 'Which of the following are greedy algorithms? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Kruskal\'s MST algorithm',
-          'Prim\'s MST algorithm',
-          'Dijkstra\'s shortest path algorithm',
-          'Floyd-Warshall all-pairs shortest path algorithm'
-        ],
-        correctAnswer: '0,1,2',
-        explanation: 'Kruskal, Prim, and Dijkstra are all classic examples of greedy design. Floyd-Warshall uses dynamic programming.',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicAlgo.id
-      },
-      {
-        text: 'Which of the following statements about virtual memory are correct? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'It allows execution of processes larger than physical memory',
-          'It decreases external fragmentation',
-          'It relies on page replacement algorithms',
-          'It completely eliminates page faults'
-        ],
-        correctAnswer: '0,1,2',
-        explanation: 'Virtual memory allows executing large processes, uses page tables to eliminate external fragmentation, and relies on page replacement. It does not eliminate page faults, but manages them.',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicOS.id
-      },
-      {
-        text: 'Which of the following are shared between parent and child processes immediately after a fork() system call in Linux? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Open file descriptors',
-          'Heap memory content',
-          'Process ID',
-          'Shared memory segments'
-        ],
-        correctAnswer: '0,3',
-        explanation: 'After fork(), parent and child processes share open file descriptors and shared memory segments. However, the PID is unique to each process, and heap/stack memory is duplicated (using copy-on-write).',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicOS.id
-      },
-      {
-        text: 'Which of the following statements about Binary Search trees are correct? Select all that apply.',
-        type: 'MSQ',
-        options: [
-          'Inorder traversal of BST gives keys in sorted order',
-          'Search time in BST is always O(log n)',
-          'The maximum depth of a BST with n nodes is O(n)',
-          'Preorder traversal of BST gives keys in sorted order'
-        ],
-        correctAnswer: '0,2',
-        explanation: 'Inorder gives sorted keys. Search in a skewed BST can take O(n) time. The maximum depth of skewed BST is O(n).',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicAlgo.id
-      },
-      {
-        text: 'Consider a relation R(A, B, C, D) with functional dependencies: A -> B, B -> C, C -> D, D -> A. In which normal form is relation R?',
-        type: 'MCQ',
-        options: ['1NF but not 2NF', '2NF but not 3NF', '3NF but not BCNF', 'BCNF'],
-        correctAnswer: '3',
-        explanation: 'The candidate keys of R are A, B, C, and D (since they form a cycle of dependencies). Since all attributes are prime, R is in 3NF. Also, for every functional dependency X -> Y, X is a superkey. Thus R is in BCNF.',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicDB.id
-      },
-      {
-        text: 'A TCP connection is using slow start. The congestion window (cwnd) size is 10 KB when a timeout occurs. What is the new slow start threshold (ssthresh) and cwnd size in KB?',
-        type: 'MCQ',
-        options: [
-          'ssthresh = 5, cwnd = 1',
-          'ssthresh = 5, cwnd = 5',
-          'ssthresh = 10, cwnd = 1',
-          'ssthresh = 10, cwnd = 5'
-        ],
-        correctAnswer: '0',
-        explanation: 'When a timeout occurs, ssthresh is set to half of the current cwnd (10 / 2 = 5 KB) and cwnd is reset to 1 MSS (1 KB).',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicNetworks.id
-      },
-      {
-        text: 'What is the maximum number of states in a minimal DFA that accepts the language L = { w in {0,1}* | w contains an even number of 0s and odd number of 1s }?',
-        type: 'MCQ',
-        options: ['2', '3', '4', '5'],
-        correctAnswer: '2',
-        explanation: 'We need states to track (parity of 0s, parity of 1s). There are 2 possible states for 0s (even, odd) and 2 for 1s (even, odd). Total states = 2 * 2 = 4.',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicTOC.id
-      },
-      {
-        text: 'Consider a compiler parser grammar. Which of the following grammars is LL(1)?',
-        type: 'MCQ',
-        options: ['S -> aS | a', 'S -> aS | b', 'S -> aSb | e', 'S -> aS | Sa | b'],
-        correctAnswer: '1',
-        explanation: 'S -> aS | b has distinct FIRST sets: FIRST(aS) = {a}, FIRST(b) = {b}, which do not overlap. Thus it is LL(1). S -> aS | a has FIRST set overlap ({a}).',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicCompiler.id
-      },
-      {
-        text: 'A pipelined processor has 5 stages with delays 9, 12, 7, 10, 8 nanoseconds. What is the clock cycle time in nanoseconds if the pipeline register delay is 1 nanosecond?',
-        type: 'MCQ',
-        options: ['10', '11', '12', '13'],
-        correctAnswer: '3',
-        explanation: 'The clock cycle time of a pipeline is determined by the slowest stage delay plus the register delay. Slowest stage = 12ns. Register delay = 1ns. Clock cycle = 12 + 1 = 13ns.',
-        marks: 2.0,
-        subjectId: subCore.id,
-        topicId: topicCOA.id
-      }
-    ];
-
     let coreQuestionsData: any[] = [];
 
-    if (branch === 'ec') {
+    if (branchUpper === 'CS') {
+      const highFidelityCS = [
+        {
+          text: 'Which of the following statements about Quick Sort are correct? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Worst-case time complexity is O(n^2)',
+            'Average-case time complexity is O(n log n)',
+            'It is a stable sorting algorithm',
+            'It is an in-place sorting algorithm'
+          ],
+          correctAnswer: '0,1,3',
+          explanation: 'Quick Sort has worst-case time O(n^2), average O(n log n). It is an in-place algorithm, but it is unstable because elements are swapped out of order.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Algorithms'] || seededCoreTopics[1].id
+        },
+        {
+          text: 'Which of the following CPU scheduling algorithms can lead to starvation? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Round Robin',
+            'Shortest Remaining Time First (SRTF)',
+            'First-Come First-Served',
+            'Priority Scheduling (non-preemptive)'
+          ],
+          correctAnswer: '1,3',
+          explanation: 'SRTF can starve long processes if short processes keep arriving. Priority scheduling can starve low-priority processes. RR and FCFS guarantee CPU time to all processes.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Operating Systems'] || seededCoreTopics[4].id
+        },
+        {
+          text: 'Which of the following are necessary conditions for deadlock? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Mutual Exclusion',
+            'Hold and Wait',
+            'No Preemption',
+            'Circular Wait'
+          ],
+          correctAnswer: '0,1,2,3',
+          explanation: 'All four are the Coffman conditions: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. Deadlock can occur only if all four hold simultaneously.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Operating Systems'] || seededCoreTopics[4].id
+        },
+        {
+          text: 'Which of the following graph traversals can check if a graph contains cycles? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Depth-First Search (DFS)',
+            'Breadth-First Search (BFS)',
+            'Inorder Traversal',
+            'Preorder Traversal'
+          ],
+          correctAnswer: '0,1',
+          explanation: 'DFS (using back edges) and BFS (using cross edges in undirected graphs) can detect cycles. Inorder and preorder traversals are specific to binary trees, which are acyclic.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Algorithms'] || seededCoreTopics[1].id
+        },
+        {
+          text: 'Which of the following data structures can be used to implement a priority queue? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Binary Heap',
+            'Balanced Binary Search Tree',
+            'Unsorted Array',
+            'Singly Linked List'
+          ],
+          correctAnswer: '0,1,2,3',
+          explanation: 'All of these can implement a priority queue, though with different complexities. Heaps are O(log n), BSTs are O(log n), unsorted arrays and lists are O(1) insert but O(n) remove-min.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Algorithms'] || seededCoreTopics[1].id
+        },
+        {
+          text: 'Which of the following statements about paging are correct? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Paging avoids external fragmentation',
+            'Paging avoids internal fragmentation',
+            'Page table is stored in main memory',
+            'TLB cache hit reduces memory access time'
+          ],
+          correctAnswer: '0,2,3',
+          explanation: 'Paging avoids external fragmentation by allocating fixed-size pages. It can lead to internal fragmentation in the last page frame. The page table is stored in main memory, and TLB speeds up lookup.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Operating Systems'] || seededCoreTopics[4].id
+        },
+        {
+          text: 'Which of the following are greedy algorithms? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Kruskal\'s MST algorithm',
+            'Prim\'s MST algorithm',
+            'Dijkstra\'s shortest path algorithm',
+            'Floyd-Warshall all-pairs shortest path algorithm'
+          ],
+          correctAnswer: '0,1,2',
+          explanation: 'Kruskal, Prim, and Dijkstra are all classic examples of greedy design. Floyd-Warshall uses dynamic programming.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Algorithms'] || seededCoreTopics[1].id
+        },
+        {
+          text: 'Which of the following statements about virtual memory are correct? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'It allows execution of processes larger than physical memory',
+            'It decreases external fragmentation',
+            'It relies on page replacement algorithms',
+            'It completely eliminates page faults'
+          ],
+          correctAnswer: '0,1,2',
+          explanation: 'Virtual memory allows executing large processes, uses page tables to eliminate external fragmentation, and relies on page replacement. It does not eliminate page faults, but manages them.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Operating Systems'] || seededCoreTopics[4].id
+        },
+        {
+          text: 'Which of the following are shared between parent and child processes immediately after a fork() system call in Linux? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Open file descriptors',
+            'Heap memory content',
+            'Process ID',
+            'Shared memory segments'
+          ],
+          correctAnswer: '0,3',
+          explanation: 'After fork(), parent and child processes share open file descriptors and shared memory segments. However, the PID is unique to each process, and heap/stack memory is duplicated (using copy-on-write).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Operating Systems'] || seededCoreTopics[4].id
+        },
+        {
+          text: 'Which of the following statements about Binary Search trees are correct? Select all that apply.',
+          type: 'MSQ',
+          options: [
+            'Inorder traversal of BST gives keys in sorted order',
+            'Search time in BST is always O(log n)',
+            'The maximum depth of a BST with n nodes is O(n)',
+            'Preorder traversal of BST gives keys in sorted order'
+          ],
+          correctAnswer: '0,2',
+          explanation: 'Inorder gives sorted keys. Search in a skewed BST can take O(n) time. The maximum depth of skewed BST is O(n).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Algorithms'] || seededCoreTopics[1].id
+        },
+        {
+          text: 'Consider a relation R(A, B, C, D) with functional dependencies: A -> B, B -> C, C -> D, D -> A. In which normal form is relation R?',
+          type: 'MCQ',
+          options: ['1NF but not 2NF', '2NF but not 3NF', '3NF but not BCNF', 'BCNF'],
+          correctAnswer: '3',
+          explanation: 'The candidate keys of R are A, B, C, and D (since they form a cycle of dependencies). Since all attributes are prime, R is in 3NF. Also, for every functional dependency X -> Y, X is a superkey. Thus R is in BCNF.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Databases'] || seededCoreTopics[5].id
+        },
+        {
+          text: 'A TCP connection is using slow start. The congestion window (cwnd) size is 10 KB when a timeout occurs. What is the new slow start threshold (ssthresh) and cwnd size in KB?',
+          type: 'MCQ',
+          options: [
+            'ssthresh = 5, cwnd = 1',
+            'ssthresh = 5, cwnd = 5',
+            'ssthresh = 10, cwnd = 1',
+            'ssthresh = 10, cwnd = 5'
+          ],
+          correctAnswer: '0',
+          explanation: 'When a timeout occurs, ssthresh is set to half of the current cwnd (10 / 2 = 5 KB) and cwnd is reset to 1 MSS (1 KB).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Computer Networks'] || seededCoreTopics[6].id
+        },
+        {
+          text: 'What is the maximum number of states in a minimal DFA that accepts the language L = { w in {0,1}* | w contains an even number of 0s and odd number of 1s }?',
+          type: 'MCQ',
+          options: ['2', '3', '4', '5'],
+          correctAnswer: '2',
+          explanation: 'We need states to track (parity of 0s, parity of 1s). There are 2 possible states for 0s (even, odd) and 2 for 1s (even, odd). Total states = 2 * 2 = 4.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Theory of Computation'] || seededCoreTopics[2].id
+        },
+        {
+          text: 'Consider a compiler parser grammar. Which of the following grammars is LL(1)?',
+          type: 'MCQ',
+          options: ['S -> aS | a', 'S -> aS | b', 'S -> aSb | e', 'S -> aS | Sa | b'],
+          correctAnswer: '1',
+          explanation: 'S -> aS | b has distinct FIRST sets: FIRST(aS) = {a}, FIRST(b) = {b}, which do not overlap. Thus it is LL(1). S -> aS | a has FIRST set overlap ({a}).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Compiler Design'] || seededCoreTopics[3].id
+        },
+        {
+          text: 'A pipelined processor has 5 stages with delays 9, 12, 7, 10, 8 nanoseconds. What is the clock cycle time in nanoseconds if the pipeline register delay is 1 nanosecond?',
+          type: 'MCQ',
+          options: ['10', '11', '12', '13'],
+          correctAnswer: '3',
+          explanation: 'The clock cycle time of a pipeline is determined by the slowest stage delay plus the register delay. Slowest stage = 12ns. Register delay = 1ns. Clock cycle = 12 + 1 = 13ns.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: coreTopicMap['Computer Organization & Architecture'] || seededCoreTopics[7].id
+        }
+      ];
+
+      coreQuestionsData = [...highFidelityCS];
+    } else if (branchUpper === 'EC') {
       const highFidelityEC = [
         {
           text: 'In a series RLC circuit at resonance, the impedance of the circuit is:',
@@ -838,7 +835,7 @@ export class TestService {
           explanation: 'At resonance, the inductive reactance and capacitive reactance cancel each other out (XL = XC). The total impedance is Z = R, which is minimum and purely resistive.',
           marks: 1.0,
           subjectId: subCore.id,
-          topicId: tNet.id
+          topicId: coreTopicMap['Network Theory'] || seededCoreTopics[0].id
         },
         {
           text: 'The Fourier transform of a unit impulse function delta(t) is:',
@@ -848,7 +845,7 @@ export class TestService {
           explanation: 'The Fourier transform of delta(t) is the integral of delta(t)*e^(-j2pi f t) dt from -inf to +inf, which evaluates to e^0 = 1.',
           marks: 1.0,
           subjectId: subCore.id,
-          topicId: tSignals.id
+          topicId: coreTopicMap['Signals & Systems'] || seededCoreTopics[1].id
         },
         {
           text: 'The depletion region width in a p-n junction diode increases with:',
@@ -858,7 +855,7 @@ export class TestService {
           explanation: 'Reverse biasing pulls majority carriers away from the junction, thereby exposing more immobile ions and increasing the depletion region width.',
           marks: 1.0,
           subjectId: subCore.id,
-          topicId: tDevices.id
+          topicId: coreTopicMap['Electronic Devices'] || seededCoreTopics[2].id
         },
         {
           text: 'An ideal operational amplifier is characterized by:',
@@ -873,7 +870,7 @@ export class TestService {
           explanation: 'An ideal op-amp has infinite input resistance (draws no current) and zero output resistance (can drive any load).',
           marks: 2.0,
           subjectId: subCore.id,
-          topicId: tAnalog.id
+          topicId: coreTopicMap['Analog Circuits'] || seededCoreTopics[3].id
         },
         {
           text: 'Which of the following logic gates is considered a universal logic gate?',
@@ -883,7 +880,7 @@ export class TestService {
           explanation: 'NAND and NOR gates are universal gates because any boolean function can be implemented using only NAND gates or only NOR gates.',
           marks: 2.0,
           subjectId: subCore.id,
-          topicId: tDigital.id
+          topicId: coreTopicMap['Digital Circuits'] || seededCoreTopics[4].id
         },
         {
           text: 'A system has a closed-loop transfer function T(s) = 10 / (s^2 + 3s + 2). The system is:',
@@ -893,7 +890,7 @@ export class TestService {
           explanation: 'The poles of the transfer function are the roots of s^2 + 3s + 2 = 0, which are s = -1 and s = -2. Since both poles lie in the left half of the s-plane, the system is stable.',
           marks: 2.0,
           subjectId: subCore.id,
-          topicId: tControl.id
+          topicId: coreTopicMap['Control Systems'] || seededCoreTopics[5].id
         },
         {
           text: 'In frequency modulation (FM), the frequency deviation of the carrier is proportional to:',
@@ -903,7 +900,7 @@ export class TestService {
           explanation: 'In FM, the instantaneous frequency of the carrier varies linearly with the amplitude of the modulating signal. Thus, the frequency deviation is proportional to the amplitude.',
           marks: 2.0,
           subjectId: subCore.id,
-          topicId: tComms.id
+          topicId: coreTopicMap['Communications'] || seededCoreTopics[6].id
         },
         {
           text: 'Maxwell\'s equation curl(H) = J + dD/dt is a statement of:',
@@ -913,69 +910,51 @@ export class TestService {
           explanation: 'curl(H) = J + dD/dt is Ampere\'s circuital law modified by Maxwell to include displacement current (dD/dt).',
           marks: 2.0,
           subjectId: subCore.id,
-          topicId: tEM.id
+          topicId: coreTopicMap['Electromagnetics'] || seededCoreTopics[7].id
         }
       ];
 
       coreQuestionsData = [...highFidelityEC];
-      const ecTopics = [tNet, tSignals, tDevices, tAnalog, tDigital, tControl, tComms, tEM];
-      let qIdCounter = coreQuestionsData.length + 1;
-      while (coreQuestionsData.length < 45) {
-        const topic = ecTopics[coreQuestionsData.length % ecTopics.length];
-        const isTwoMark = coreQuestionsData.length >= 20;
-        const marks = isTwoMark ? 2.0 : 1.0;
+    }
 
-        coreQuestionsData.push({
-          text: `[GATE EC ${year} - Q${20 + qIdCounter}] Consider a signal propagation problem in ${topic.name}. Calculate the power spectral density or transfer impedance parameters under steady state.`,
-          type: 'MCQ',
-          options: ['Standard resonance mode', 'Transient response attenuation', 'S-parameter matching matrix', 'Phase-locked loop state'],
-          correctAnswer: '0',
-          explanation: `In ${topic.name}, system analysis under these parameters requires calculating impedance matrices or spectral components matching the input excitations.`,
-          marks,
-          subjectId: subCore.id,
-          topicId: topic.id
-        });
-        qIdCounter++;
-      }
-    } else {
-      coreQuestionsData = [...highFidelityCS];
-      const csTopics = [topicProg, topicAlgo, topicTOC, topicCompiler, topicOS, topicDB, topicNetworks, topicCOA, topicDigital];
-      let qIdCounter = coreQuestionsData.length + 1;
-      while (coreQuestionsData.length < 45) {
-        const topic = csTopics[coreQuestionsData.length % csTopics.length];
-        const isTwoMark = coreQuestionsData.length >= 20;
-        const marks = isTwoMark ? 2.0 : 1.0;
+    // Now populate coreQuestionsData to a total of 45 questions dynamically
+    let qIdCounter = coreQuestionsData.length + 1;
+    while (coreQuestionsData.length < 45) {
+      const topic = seededCoreTopics[coreQuestionsData.length % seededCoreTopics.length];
+      const isTwoMark = coreQuestionsData.length >= 20;
+      const marks = isTwoMark ? 2.0 : 1.0;
 
-        coreQuestionsData.push({
-          text: `[GATE CS ${year} - Q${20 + qIdCounter}] Consider a query optimization problem in ${topic.name}. If the cost function is parameterized by relation sizes, what is the optimal execution path complexity?`,
-          type: 'MCQ',
-          options: ['O(N log N) dynamic plan', 'O(N^2) greedy evaluation', 'O(2^N) exhaustive search', 'O(1) table lookup'],
-          correctAnswer: '0',
-          explanation: `Under typical query optimizer algorithms in ${topic.name}, dynamic programming is used to find the optimal path in polynomial or sub-exponential time depending on join sizes, yielding O(N log N) or O(N^2) complexity.`,
-          marks,
-          subjectId: subCore.id,
-          topicId: topic.id
-        });
-        qIdCounter++;
-      }
+      coreQuestionsData.push({
+        text: `[GATE ${branchUpper} ${year} - Q${20 + qIdCounter}] Consider a fundamental design or analysis problem in ${topic.name}. Calculate the optimal state-space model or parameter configurations matching standard boundary settings.`,
+        type: 'MCQ',
+        options: [
+          'Standard steady-state boundary response',
+          'Transient parameter convergence limit',
+          'Linear parameter matrix eigenvalues representation',
+          'Dynamic state feedback stabilization'
+        ],
+        correctAnswer: '0',
+        explanation: `Under standard exam conditions in ${topic.name}, the parameters must be analyzed using steady-state methods to resolve the system's boundary state vector.`,
+        marks,
+        subjectId: subCore.id,
+        topicId: topic.id
+      });
+      qIdCounter++;
     }
 
     // Now, filter questions based on the mode and seed
     let finalQuestions: any[] = [];
     if (mode === 'ga') {
-      // Seed 10 GA questions
       finalQuestions = [...gaQuestionsData];
     } else if (mode === 'subject') {
-      // Seed 55 subject questions (10 Math + 45 Core CS / EC)
       mathQuestionsData.forEach((q, idx) => {
-        q.marks = idx < 5 ? 1.0 : 2.0; // 5 of 1 mark, 5 of 2 marks
+        q.marks = idx < 5 ? 1.0 : 2.0;
       });
       coreQuestionsData.forEach((q, idx) => {
-        q.marks = idx < 20 ? 1.0 : 2.0; // 20 of 1 mark, 25 of 2 marks
+        q.marks = idx < 20 ? 1.0 : 2.0;
       });
       finalQuestions = [...mathQuestionsData, ...coreQuestionsData];
     } else {
-      // Seed 65 questions (10 GA + 10 Math + 45 Core CS / EC)
       gaQuestionsData.forEach((q, idx) => {
         q.marks = idx < 5 ? 1.0 : 2.0;
       });
