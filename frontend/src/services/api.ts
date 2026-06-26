@@ -52,7 +52,7 @@ export const authApi = {
     const { data } = await api.post('/auth/logout');
     return data;
   },
-  updateProfile: async (payload: { name: string; branch: string }) => {
+  updateProfile: async (payload: { name: string; branch: string; profilePicture?: string }) => {
     const { data } = await api.put('/auth/profile', payload);
     return data;
   },

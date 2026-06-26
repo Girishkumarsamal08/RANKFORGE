@@ -3,6 +3,7 @@ export interface User {
   email: string;
   name: string;
   branch: string;
+  profilePicture?: string;
 }
 
 export interface Exam {

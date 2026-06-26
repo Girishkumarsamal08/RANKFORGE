@@ -24,5 +24,6 @@ export const updateProfileSchema = z.object({
   branch: z.string().toUpperCase().refine((val) => VALID_BRANCHES.includes(val as any), {
     message: 'Invalid GATE branch selected',
   }),
+  profilePicture: z.string().optional().nullable(),
 });
 

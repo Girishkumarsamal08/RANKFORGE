@@ -32,8 +32,12 @@ export default function Navbar() {
       {isAuthenticated && user && (
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 rounded-xl bg-zinc-900/60 p-1.5 pr-3 border border-zinc-800">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-              <User className="h-4.5 w-4.5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-850 text-zinc-300 overflow-hidden border border-zinc-800">
+              {user.profilePicture ? (
+                <img src={user.profilePicture} alt={user.name} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-4.5 w-4.5" />
+              )}
             </div>
             <div className="text-left">
               <p className="text-xs font-semibold text-zinc-200 leading-tight">{user.name}</p>

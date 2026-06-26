@@ -47,6 +47,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         branch: user.branch,
+        profilePicture: user.profilePicture,
       },
       token,
     };
@@ -112,6 +113,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         branch: user.branch,
+        profilePicture: user.profilePicture,
       },
       token,
     };
@@ -128,6 +130,7 @@ export class AuthService {
     const updatedUser = await userRepository.updateUser(userId, {
       name: validated.name,
       branch: validated.branch,
+      profilePicture: validated.profilePicture,
     });
 
     let sessionId = await redisClient.get(`user:${userId}:active_session`);
@@ -153,6 +156,7 @@ export class AuthService {
         email: updatedUser.email,
         name: updatedUser.name,
         branch: updatedUser.branch,
+        profilePicture: updatedUser.profilePicture,
       },
       token,
     };

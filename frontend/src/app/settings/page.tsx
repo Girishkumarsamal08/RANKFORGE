@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
-import { User, Award, Save, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import ImageEditorModal from '../../components/ImageEditorModal';
+import { User, Award, Save, Loader2, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
 
 const GATE_BRANCHES = [
   { code: 'AE', name: 'Aerospace Engineering (AE)' },
@@ -46,9 +47,15 @@ export default function SettingsPage() {
 
   const [name, setName] = useState('');
   const [branch, setBranch] = useState('CS');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // States for Image Upload and Cropping
+  const [rawImage, setRawImage] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -56,8 +63,34 @@ export default function SettingsPage() {
     } else if (user) {
       setName(user.name);
       setBranch(user.branch || 'CS');
+      setProfilePicture(user.profilePicture || null);
     }
   }, [isAuthenticated, user, router]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setRawImage(event.target.result as string);
+          setShowEditor(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropSave = (croppedBase64: string) => {
+    setProfilePicture(croppedBase64);
+    setShowEditor(false);
+    setRawImage(null);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +104,11 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      const response = await authApi.updateProfile({ name, branch });
+      const response = await authApi.updateProfile({ 
+        name, 
+        branch, 
+        profilePicture: profilePicture || undefined 
+      });
       
       // Update Redux Credentials & LocalStorage
       loginUser(response.user, response.token);
@@ -107,13 +144,49 @@ export default function SettingsPage() {
           <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 md:p-8 shadow-xl shadow-black/20 backdrop-blur-md">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Profile Icon and Header */}
-              <div className="flex items-center gap-4 border-b border-zinc-800/80 pb-6">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-650/10 text-brand-400 border border-brand-500/20">
-                  <User className="h-7 w-7" />
+              <div className="flex items-center gap-5 border-b border-zinc-800/80 pb-6">
+                {/* Clickable circular/rounded profile avatar with hover effect */}
+                <div 
+                  onClick={triggerFileInput}
+                  className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 border border-zinc-800 shadow-inner overflow-hidden cursor-pointer select-none transition hover:border-brand-500/50"
+                  title="Click to change profile picture"
+                >
+                  {profilePicture ? (
+                    <img 
+                      src={profilePicture} 
+                      alt={name} 
+                      className="h-full w-full object-cover rounded-2xl transition group-hover:opacity-40" 
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-brand-650/10 text-brand-400 border border-brand-500/20 rounded-2xl group-hover:bg-brand-650/5 transition">
+                      <User className="h-9 w-9 transition group-hover:opacity-40" />
+                    </div>
+                  )}
+                  {/* Camera overlay on hover */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                    <Camera className="h-5 w-5 text-white" />
+                    <span className="text-[9px] font-bold text-white mt-1 uppercase tracking-wider">Change</span>
+                  </div>
                 </div>
+
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+
                 <div>
                   <h3 className="text-lg font-bold text-white">{user.name}</h3>
-                  <p className="text-xs text-zinc-450">{user.email}</p>
+                  <p className="text-xs text-zinc-455">{user.email}</p>
+                  <button
+                    type="button"
+                    onClick={triggerFileInput}
+                    className="text-[11px] font-semibold text-brand-400 hover:text-brand-300 mt-1 cursor-pointer transition underline underline-offset-2 decoration-brand-500/40"
+                  >
+                    Upload profile picture
+                  </button>
                 </div>
               </div>
 
@@ -193,6 +266,18 @@ export default function SettingsPage() {
           </div>
         </main>
       </div>
+
+      {/* Image Editor Modal Portal */}
+      {showEditor && rawImage && (
+        <ImageEditorModal
+          imageSrc={rawImage}
+          onSave={handleCropSave}
+          onClose={() => {
+            setShowEditor(false);
+            setRawImage(null);
+          }}
+        />
+      )}
     </div>
   );
 }
