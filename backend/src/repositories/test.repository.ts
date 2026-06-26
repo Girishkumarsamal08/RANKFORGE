@@ -28,12 +28,13 @@ export class TestRepository {
     });
   }
 
-  async createAttempt(userId: string, examId: string): Promise<TestAttempt> {
+  async createAttempt(userId: string, examId: string, durationSeconds?: number): Promise<TestAttempt> {
     return prisma.testAttempt.create({
       data: {
         userId,
         examId,
         status: 'IN_PROGRESS',
+        ...(durationSeconds !== undefined ? { durationSeconds } : {}),
       },
     });
   }

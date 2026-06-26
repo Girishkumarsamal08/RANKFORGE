@@ -50,6 +50,7 @@ model Question {
   options      String[]     // MCQ/MSQ option labels
   correctAnswer String      // Correct response representation (e.g. index list or exact float)
   explanation  String?
+  marks        Float        @default(2.0)
   subjectId    String
   subject      Subject      @relation(fields: [subjectId], references: [id])
   topicId      String

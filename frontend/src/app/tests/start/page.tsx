@@ -17,6 +17,9 @@ export default function StartTestPage() {
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+  
+  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedMode, setSelectedMode] = useState('full'); // 'ga', 'subject', 'full'
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<DashboardAnalytics>({
     queryKey: ['dashboardAnalytics'],
@@ -45,8 +48,8 @@ export default function StartTestPage() {
 
     setLoading(true);
     try {
-      // Initialize GATE CS mock test
-      const response = await testsApi.start('gate-cs-2026');
+      // Initialize GATE CS mock test with the chosen configuration
+      const response = await testsApi.start(`gate-cs-${selectedYear}-${selectedMode}`);
       
       // Dispatch payload to Redux store
       dispatch(initTest({
@@ -71,6 +74,19 @@ export default function StartTestPage() {
 
   if (!isAuthenticated) return null;
 
+  // Configuration metrics
+  const getMetrics = () => {
+    if (selectedMode === 'ga') {
+      return { questionsCount: '10 Questions', timerLimit: '30 Minutes', maxMarks: '15.00 Marks' };
+    }
+    if (selectedMode === 'subject') {
+      return { questionsCount: '55 Questions', timerLimit: '150 Minutes', maxMarks: '85.00 Marks' };
+    }
+    return { questionsCount: '65 Questions', timerLimit: '180 Minutes', maxMarks: '100.00 Marks' };
+  };
+
+  const metrics = getMetrics();
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-transparent">
       <Navbar />
@@ -90,25 +106,90 @@ export default function StartTestPage() {
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-200">Featured Mock Assessment</span>
-                <h2 className="text-xl font-bold mt-0.5">GATE Computer Science (CS) - Diagnostics 1</h2>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-200">Customizable Assessment Builder</span>
+                <h2 className="text-xl font-bold mt-0.5">GATE Computer Science (CS) Mock Exam</h2>
               </div>
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
+              {/* Year Selection */}
+              <div>
+                <label className="text-xs font-bold text-zinc-450 uppercase tracking-widest block mb-3">
+                  Select Exam Reference Year (PYQ Source)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {['2025', '2024', '2023', '2022', '2021', '2020'].map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setSelectedYear(year)}
+                      className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                        selectedYear === year
+                          ? 'bg-brand-600 border-brand-500 text-white shadow-lg shadow-brand-900/20'
+                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                      }`}
+                    >
+                      GATE {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mode Selection */}
+              <div>
+                <label className="text-xs font-bold text-zinc-450 uppercase tracking-widest block mb-3">
+                  Select Exam Format / Segment
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: 'ga',
+                      title: 'General Aptitude (GA)',
+                      desc: '10 questions (15 marks) covering compulsory verbal & numerical reasoning.',
+                    },
+                    {
+                      id: 'subject',
+                      title: 'Subject Paper',
+                      desc: '55 questions (85 marks) covering Engineering Math and Core CS subjects.',
+                    },
+                    {
+                      id: 'full',
+                      title: 'Full Mock Exam',
+                      desc: '65 questions (100 marks) combining GA and Subject sections for complete actual exam experience.',
+                    },
+                  ].map((modeOpt) => (
+                    <button
+                      key={modeOpt.id}
+                      onClick={() => setSelectedMode(modeOpt.id)}
+                      className={`p-4 rounded-xl border transition text-left cursor-pointer flex flex-col h-full ${
+                        selectedMode === modeOpt.id
+                          ? 'bg-brand-950/20 border-brand-500 text-white'
+                          : 'bg-zinc-950/60 border-zinc-850 text-zinc-400 hover:border-zinc-800 hover:text-zinc-300'
+                      }`}
+                    >
+                      <span className={`text-xs font-extrabold uppercase mb-1 tracking-wider ${selectedMode === modeOpt.id ? 'text-brand-400' : 'text-zinc-500'}`}>
+                        {modeOpt.title}
+                      </span>
+                      <p className="text-[11px] leading-relaxed font-medium mt-1">
+                        {modeOpt.desc}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Exam Info Blocks */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
                   <span className="text-[10px] text-zinc-500 font-bold uppercase">Questions</span>
-                  <p className="text-xl font-bold text-white mt-1">6 Modules</p>
+                  <p className="text-xl font-bold text-white mt-1">{metrics.questionsCount}</p>
                 </div>
                 <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
                   <span className="text-[10px] text-zinc-500 font-bold uppercase">Timer Limit</span>
-                  <p className="text-xl font-bold text-white mt-1">30 Minutes</p>
+                  <p className="text-xl font-bold text-white mt-1">{metrics.timerLimit}</p>
                 </div>
                 <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
                   <span className="text-[10px] text-zinc-500 font-bold uppercase">Simulated Max Marks</span>
-                  <p className="text-xl font-bold text-white mt-1">12.00</p>
+                  <p className="text-xl font-bold text-white mt-1">{metrics.maxMarks}</p>
                 </div>
               </div>
 
