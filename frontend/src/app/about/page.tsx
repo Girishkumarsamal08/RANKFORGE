@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import { 
@@ -27,7 +27,6 @@ import {
 
 export default function AboutPage() {
   const { isAuthenticated } = useAuth();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Form State
   const [form, setForm] = useState({
@@ -49,146 +48,6 @@ export default function AboutPage() {
       alert('Thank you for contacting us! We will get back to you soon.');
     }, 1500);
   };
-
-  // Starry Background Logic
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-
-    const CONFIG = {
-      starCount: 150,
-      meteorCount: 5,
-      meteorSpeed: 3,
-      meteorLength: 120,
-      meteorInterval: 3000,
-    };
-
-    let stars: Array<{
-      x: number;
-      y: number;
-      radius: number;
-      alpha: number;
-      alphaChange: number;
-    }> = [];
-
-    let meteors: Array<{
-      x: number;
-      y: number;
-      length: number;
-      speed: number;
-      alpha: number;
-      angle: number;
-    }> = [];
-
-    function resize() {
-      if (!canvas) return;
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-      createStars();
-    }
-
-    function random(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
-
-    function createStars() {
-      stars = [];
-      for (let i = 0; i < CONFIG.starCount; i++) {
-        stars.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          radius: Math.random() * 1.2,
-          alpha: Math.random(),
-          alphaChange: 0.003 + Math.random() * 0.012,
-        });
-      }
-    }
-
-    function createMeteor() {
-      meteors.push({
-        x: random(width * 0.1, width * 0.9),
-        y: 0,
-        length: CONFIG.meteorLength,
-        speed: CONFIG.meteorSpeed,
-        alpha: 1,
-        angle: Math.PI / 4,
-      });
-    }
-
-    function drawStars() {
-      stars.forEach(star => {
-        star.alpha += star.alphaChange;
-        if (star.alpha <= 0 || star.alpha >= 1) star.alphaChange = -star.alphaChange;
-        ctx!.beginPath();
-        ctx!.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
-        ctx!.fillStyle = `rgba(255, 255, 255, ${Math.max(0, Math.min(1, star.alpha))})`;
-        ctx!.fill();
-      });
-    }
-
-    function drawMeteors() {
-      meteors.forEach((meteor, index) => {
-        meteor.x += meteor.speed * Math.cos(meteor.angle);
-        meteor.y += meteor.speed * Math.sin(meteor.angle);
-        meteor.alpha -= 0.008;
-        if (meteor.alpha <= 0 || meteor.x > width || meteor.y > height) {
-          meteors.splice(index, 1);
-          return;
-        }
-        const grad = ctx!.createLinearGradient(
-          meteor.x, 
-          meteor.y, 
-          meteor.x - meteor.length * Math.cos(meteor.angle), 
-          meteor.y - meteor.length * Math.sin(meteor.angle)
-        );
-        grad.addColorStop(0, `rgba(255, 255, 255, ${meteor.alpha})`);
-        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx!.strokeStyle = grad;
-        ctx!.lineWidth = 1.5;
-        ctx!.beginPath();
-        ctx!.moveTo(meteor.x, meteor.y);
-        ctx!.lineTo(
-          meteor.x - meteor.length * Math.cos(meteor.angle), 
-          meteor.y - meteor.length * Math.sin(meteor.angle)
-        );
-        ctx!.stroke();
-      });
-    }
-
-    let animationId: number;
-    function animate() {
-      ctx!.clearRect(0, 0, width, height);
-      drawStars();
-      drawMeteors();
-      animationId = requestAnimationFrame(animate);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    animate();
-
-    const meteorTimer = setInterval(() => {
-      if (meteors.length < CONFIG.meteorCount) {
-        createMeteor();
-      }
-    }, CONFIG.meteorInterval);
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationId);
-      clearInterval(meteorTimer);
-    };
-  }, []);
 
   const features = [
     {
@@ -260,10 +119,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full bg-[#050508] text-zinc-100 overflow-x-hidden font-sans flex flex-col justify-between">
-      {/* Background Canvas */}
-      <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-40" />
-
+    <div className="relative min-h-screen w-full bg-transparent text-zinc-100 overflow-x-hidden font-sans flex flex-col justify-between">
       {/* Background Gradient Orbs */}
       <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-brand-500/10 blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-[20%] right-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none z-0" />
