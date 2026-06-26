@@ -65,13 +65,27 @@ export class TestService {
 
     const branch = parts[1] || 'cs';
     const branchUpper = branch.toUpperCase();
-    const examTitle = `GATE ${branchUpper} ${year} - ${modeText}`;
-    const exam = await testRepository.getFirstOrCreateExam(examCode, examTitle);
 
-    // 3. Check if we need to seed starter questions for this exam
+    // 3. Count previous attempts to determine attempt number and generate unique exam papers
+    const attemptsCount = await prisma.testAttempt.count({
+      where: {
+        userId,
+        exam: {
+          code: {
+            startsWith: `gate-${branch}-${year}-${mode}`
+          }
+        }
+      }
+    });
+    const attemptNum = attemptsCount + 1;
+    const uniqueExamCode = `gate-${branch}-${year}-${mode}-att${attemptNum}-${userId}`;
+    const examTitle = `GATE ${branchUpper} ${year} - ${modeText} (Attempt #${attemptNum})`;
+    const exam = await testRepository.getFirstOrCreateExam(uniqueExamCode, examTitle);
+
+    // 4. Check if we need to seed starter questions for this unique exam paper
     const existingQuestions = await testRepository.getQuestionsByExam(exam.id);
     if (existingQuestions.length === 0) {
-      await this.seedExamData(exam.id, examCode);
+      await this.seedExamData(exam.id, uniqueExamCode);
     }
 
     // 4. Create test attempt with duration
@@ -373,6 +387,27 @@ export class TestService {
     const mode = parts[3] || 'full';
 
     console.log(`Auto-seeding questions for exam identifier: ${examId}, branch: ${branchUpper}, year: ${year}, mode: ${mode}`);
+
+    // Randomize numerical parameters dynamically for this attempt
+    const gaMen1 = Math.floor(Math.random() * 8) + 6; // 6 to 13
+    const gaDays1 = Math.floor(Math.random() * 12) + 10; // 10 to 21
+    const gaMen2 = Math.floor(Math.random() * 8) + 12; // 12 to 19
+    const gaAns = Math.round((gaMen1 * gaDays1) / gaMen2);
+
+    const trainLen1 = [120, 150, 180, 200][Math.floor(Math.random() * 4)];
+    const trainLen2 = [100, 120, 150, 180][Math.floor(Math.random() * 4)];
+    const trainSpeed = [30, 45, 60, 90][Math.floor(Math.random() * 4)];
+    const relSpeedMs = trainSpeed * 2 * 5 / 18;
+    const trainTime = Math.round((trainLen1 + trainLen2) / relSpeedMs);
+
+    const ev1 = Math.floor(Math.random() * 3) + 1; // 1 to 3
+    const ev2 = Math.floor(Math.random() * 3) + 2; // 2 to 4
+    const ev3 = Math.floor(Math.random() * 3) + 4; // 4 to 6
+    const detVal = (ev1 * ev2 * ev3) * (ev1 * ev2 * ev3);
+    const mathOptions = [detVal - 20, detVal - 10, detVal - 5, detVal].map(String);
+
+    const pBVal = [0.4, 0.5, 0.8][Math.floor(Math.random() * 3)];
+    const pCond = parseFloat((0.2 / pBVal).toFixed(2));
     
     // Create subjects
     const subGA = await prisma.subject.create({ data: { name: 'General Aptitude', examId } });
@@ -424,11 +459,11 @@ export class TestService {
         topicId: topicVerbal.id
       },
       {
-        text: 'A work can be completed by 10 men in 15 days. How many days will it take for 15 men to complete the same work?',
+        text: `A work can be completed by ${gaMen1} men in ${gaDays1} days. How many days will it take for ${gaMen2} men to complete the same work? (Round to the nearest integer)`,
         type: 'NAT',
         options: [],
-        correctAnswer: '10',
-        explanation: 'Total man-days required = 10 * 15 = 150. For 15 men, days required = 150 / 15 = 10 days.',
+        correctAnswer: `${gaAns}`,
+        explanation: `Total man-days required = ${gaMen1} * ${gaDays1} = ${gaMen1 * gaDays1}. For ${gaMen2} men, days required = ${gaMen1 * gaDays1} / ${gaMen2} ≈ ${gaAns} days.`,
         marks: 1.0,
         subjectId: subGA.id,
         topicId: topicQuant.id
@@ -459,11 +494,11 @@ export class TestService {
         topicId: topicVerbal.id
       },
       {
-        text: 'Two trains of length 150m and 100m are running in opposite directions at 45 km/h each. How many seconds will they take to cross each other?',
+        text: `Two trains of length ${trainLen1}m and ${trainLen2}m are running in opposite directions at ${trainSpeed} km/h each. How many seconds will they take to cross each other? (Round to the nearest integer)`,
         type: 'NAT',
         options: [],
-        correctAnswer: '10',
-        explanation: 'Total distance = 150m + 100m = 250m. Relative speed in opposite direction = 45 + 45 = 90 km/h = 90 * 5/18 = 25 m/s. Time = 250 / 25 = 10 seconds.',
+        correctAnswer: `${trainTime}`,
+        explanation: `Total distance = ${trainLen1}m + ${trainLen2}m = ${trainLen1 + trainLen2}m. Relative speed in opposite direction = ${trainSpeed} + ${trainSpeed} = ${trainSpeed * 2} km/h = ${trainSpeed * 2} * 5/18 = ${relSpeedMs.toFixed(2)} m/s. Time = ${trainLen1 + trainLen2} / ${relSpeedMs.toFixed(2)} ≈ ${trainTime} seconds.`,
         marks: 2.0,
         subjectId: subGA.id,
         topicId: topicQuant.id
@@ -512,11 +547,11 @@ export class TestService {
 
     const mathQuestionsData = [
       {
-        text: 'Consider a 3x3 matrix A with eigenvalues 1, 2, and 5. What is the determinant of matrix A^2?',
+        text: `Consider a 3x3 matrix A with eigenvalues ${ev1}, ${ev2}, and ${ev3}. What is the determinant of matrix A^2?`,
         type: 'MCQ',
-        options: ['8', '10', '20', '100'],
+        options: mathOptions,
         correctAnswer: '3',
-        explanation: 'The determinant of a matrix is the product of its eigenvalues. So det(A) = 1 * 2 * 5 = 10. Thus, det(A^2) = (det(A))^2 = 10^2 = 100.',
+        explanation: `The determinant of a matrix is the product of its eigenvalues. So det(A) = ${ev1} * ${ev2} * ${ev3} = ${ev1 * ev2 * ev3}. Thus, det(A^2) = (det(A))^2 = ${ev1 * ev2 * ev3}^2 = ${detVal}.`,
         marks: 1.0,
         subjectId: subMath.id,
         topicId: topicLinear.id
@@ -572,11 +607,11 @@ export class TestService {
         topicId: topicProbability.id
       },
       {
-        text: 'If P(A) = 0.6, P(B) = 0.4 and P(A ∩ B) = 0.2, then what is the conditional probability P(A|B)? (Round to 2 decimal places)',
+        text: `If P(A) = 0.6, P(B) = ${pBVal} and P(A ∩ B) = 0.2, then what is the conditional probability P(A|B)? (Round to 2 decimal places)`,
         type: 'NAT',
         options: [],
-        correctAnswer: '0.5',
-        explanation: 'P(A|B) = P(A ∩ B) / P(B) = 0.2 / 0.4 = 0.5.',
+        correctAnswer: `${pCond}`,
+        explanation: `P(A|B) = P(A ∩ B) / P(B) = 0.2 / ${pBVal} = ${pCond}.`,
         marks: 2.0,
         subjectId: subMath.id,
         topicId: topicProbability.id
