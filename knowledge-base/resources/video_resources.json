@@ -1,0 +1,11 @@
+{
+  "resource_type": "video_resources",
+  "items": [
+    {
+      "title": "Standard GATE Reference for video_resources",
+      "provider": "NPTEL / Core Authors",
+      "link": "https://nptel.ac.in",
+      "relevance": "HIGH"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "year": 2022,
+  "branch": "CS",
+  "category": "General",
+  "qualifying_marks": 27.0,
+  "highest_score": 985,
+  "gate_score_mapping": [
+    {
+      "marks": 80,
+      "score": 900
+    },
+    {
+      "marks": 50,
+      "score": 620
+    },
+    {
+      "marks": 30,
+      "score": 400
+    }
+  ],
+  "approx_air_mapping": [
+    {
+      "score": 950,
+      "rank_min": 1,
+      "rank_max": 10
+    },
+    {
+      "score": 800,
+      "rank_min": 100,
+      "rank_max": 200
+    },
+    {
+      "score": 600,
+      "rank_min": 1500,
+      "rank_max": 2000
+    }
+  ],
+  "metadata": {
+    "source": "Official GATE qualifying lists",
+    "notes": "Datasets are templates and will be populated from verified sources."
+  }
+}

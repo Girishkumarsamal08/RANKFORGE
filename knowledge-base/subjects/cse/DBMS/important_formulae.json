@@ -1,0 +1,22 @@
+[
+  {
+    "concept": "ER Model",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Relational Algebra",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "SQL",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Normalization",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Transactions",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

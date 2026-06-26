@@ -1,0 +1,17 @@
+{
+  "C Programming basics": [
+    "Core subtopic of C Programming basics"
+  ],
+  "Recursion": [
+    "Core subtopic of Recursion"
+  ],
+  "Arrays & Pointers": [
+    "Core subtopic of Arrays & Pointers"
+  ],
+  "Stacks & Queues": [
+    "Core subtopic of Stacks & Queues"
+  ],
+  "Trees & Heaps": [
+    "Core subtopic of Trees & Heaps"
+  ]
+}

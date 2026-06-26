@@ -1,0 +1,22 @@
+[
+  {
+    "concept": "Machine Instructions",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Addressing Modes",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "ALU & Datapath",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Pipelining",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Memory Hierarchy",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

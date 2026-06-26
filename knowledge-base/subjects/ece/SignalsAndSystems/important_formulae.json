@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "LTI Systems",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Fourier Series & Transform",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Laplace Transform",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Z-Transform",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

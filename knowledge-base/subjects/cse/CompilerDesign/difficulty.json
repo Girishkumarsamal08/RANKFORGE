@@ -1,0 +1,6 @@
+{
+  "Lexical Analysis": "MEDIUM",
+  "Parsing": "MEDIUM",
+  "Syntax Directed Translation": "MEDIUM",
+  "Code Generation": "MEDIUM"
+}

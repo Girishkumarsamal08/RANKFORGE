@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Maxwell's Equations",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Wave Propagation",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Transmission Lines",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Antennas",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

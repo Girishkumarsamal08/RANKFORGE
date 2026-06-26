@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Linear Algebra",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Calculus",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Probability & Statistics",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Discrete Mathematics",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

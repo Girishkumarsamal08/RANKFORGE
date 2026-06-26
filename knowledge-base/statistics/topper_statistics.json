@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "metric": "topper_statistics",
+  "data": [],
+  "metadata": {
+    "status": "SCHEMA_ONLY"
+  }
+}

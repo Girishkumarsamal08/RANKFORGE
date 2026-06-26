@@ -1,0 +1,17 @@
+{
+  "OSI/TCP-IP Layers": [
+    "Core subtopic of OSI/TCP-IP Layers"
+  ],
+  "Flow Control": [
+    "Core subtopic of Flow Control"
+  ],
+  "Routing Algorithms": [
+    "Core subtopic of Routing Algorithms"
+  ],
+  "TCP/UDP": [
+    "Core subtopic of TCP/UDP"
+  ],
+  "IP Addressing": [
+    "Core subtopic of IP Addressing"
+  ]
+}

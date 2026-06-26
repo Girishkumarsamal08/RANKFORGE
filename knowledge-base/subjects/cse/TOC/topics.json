@@ -1,0 +1,9 @@
+{
+  "subject": "TOC",
+  "topics": [
+    "Regular Languages & DFA",
+    "Context Free Languages & PDA",
+    "Turing Machines",
+    "Decidability"
+  ]
+}

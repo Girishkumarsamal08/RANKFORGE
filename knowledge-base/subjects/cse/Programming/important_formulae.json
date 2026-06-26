@@ -1,0 +1,22 @@
+[
+  {
+    "concept": "C Programming basics",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Recursion",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Arrays & Pointers",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Stacks & Queues",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Trees & Heaps",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

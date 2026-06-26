@@ -1,0 +1,10 @@
+{
+  "subject": "OperatingSystems",
+  "topics": [
+    "Processes & Threads",
+    "CPU Scheduling",
+    "Deadlocks",
+    "Memory Management",
+    "File Systems"
+  ]
+}

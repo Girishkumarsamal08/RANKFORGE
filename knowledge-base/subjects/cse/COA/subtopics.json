@@ -1,0 +1,17 @@
+{
+  "Machine Instructions": [
+    "Core subtopic of Machine Instructions"
+  ],
+  "Addressing Modes": [
+    "Core subtopic of Addressing Modes"
+  ],
+  "ALU & Datapath": [
+    "Core subtopic of ALU & Datapath"
+  ],
+  "Pipelining": [
+    "Core subtopic of Pipelining"
+  ],
+  "Memory Hierarchy": [
+    "Core subtopic of Memory Hierarchy"
+  ]
+}

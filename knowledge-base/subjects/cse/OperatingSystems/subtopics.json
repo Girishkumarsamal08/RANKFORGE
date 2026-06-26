@@ -1,0 +1,17 @@
+{
+  "Processes & Threads": [
+    "Core subtopic of Processes & Threads"
+  ],
+  "CPU Scheduling": [
+    "Core subtopic of CPU Scheduling"
+  ],
+  "Deadlocks": [
+    "Core subtopic of Deadlocks"
+  ],
+  "Memory Management": [
+    "Core subtopic of Memory Management"
+  ],
+  "File Systems": [
+    "Core subtopic of File Systems"
+  ]
+}

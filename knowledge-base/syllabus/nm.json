@@ -1,0 +1,92 @@
+{
+  "branch": "NM",
+  "subjects": [
+    {
+      "name": "General Aptitude",
+      "topics": [
+        {
+          "name": "Verbal Aptitude",
+          "subtopics": [
+            "Basic English grammar",
+            "Vocabulary",
+            "Reading comprehension"
+          ],
+          "learning_objectives": [
+            "Identify grammar rules",
+            "Analyze reading passages"
+          ],
+          "prerequisites": [
+            "Secondary school level English"
+          ],
+          "expected_study_hours": 15,
+          "difficulty": "EASY",
+          "weightage_percent": 5.0,
+          "previous_year_frequency": {
+            "2025": 3,
+            "2024": 2
+          },
+          "common_mistakes": [
+            "Overlooking subject-verb agreement",
+            "Confusing homophones"
+          ],
+          "important_formulae": [],
+          "important_definitions": [
+            "Subject: The noun or pronoun performing the action"
+          ],
+          "important_concepts": [
+            "Active and Passive voice",
+            "Tenses hierarchy"
+          ],
+          "recommended_learning_order": [
+            "Grammar rules",
+            "Comprehension practice"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Core Technical Subjects",
+      "topics": [
+        {
+          "name": "Module A of NM",
+          "subtopics": [
+            "Fundamental principles",
+            "Advanced theory"
+          ],
+          "learning_objectives": [
+            "Examine fundamental operations",
+            "Evaluate circuit behaviors"
+          ],
+          "prerequisites": [
+            "Basic Mathematics"
+          ],
+          "expected_study_hours": 40,
+          "difficulty": "MEDIUM",
+          "weightage_percent": 15.0,
+          "previous_year_frequency": {
+            "2025": 5,
+            "2024": 4
+          },
+          "common_mistakes": [
+            "Improper boundary condition matching",
+            "Sign errors in integrals"
+          ],
+          "important_formulae": [
+            "X = A + B"
+          ],
+          "important_definitions": [
+            "Fundamental state: lowest energy configuration"
+          ],
+          "important_concepts": [
+            "State transitions",
+            "Linearity assumptions"
+          ],
+          "recommended_learning_order": [
+            "Introductory principles",
+            "Theoretical derivations"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "concept": "OSI/TCP-IP Layers",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Flow Control",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Routing Algorithms",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "TCP/UDP",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "IP Addressing",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

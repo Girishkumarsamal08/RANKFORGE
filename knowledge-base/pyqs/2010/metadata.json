@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "year": 2010,
+  "entries": [
+    {
+      "question_id": "gate-cs-2010-q1",
+      "year": 2010,
+      "branch": "CS",
+      "subject": "Algorithms",
+      "topic": "Sorting",
+      "subtopic": "Quick Sort",
+      "difficulty": "MEDIUM",
+      "marks": 2.0,
+      "question_type": "MCQ",
+      "expected_time_seconds": 180,
+      "bloom_level": "Apply",
+      "concept_tags": [
+        "Recursion",
+        "Divide and conquer"
+      ],
+      "related_topics": [
+        "Merge Sort",
+        "Time Complexity Analysis"
+      ],
+      "frequency_score": 0.85
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Diode Circuits",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "BJT/MOSFET Amplifiers",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Op-Amp Circuits",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Active Filters",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "rule_type": "subject_weightage",
+  "rules": [
+    {
+      "id": "rule_subject_weightage_01",
+      "trigger": "accuracy < 0.40",
+      "action": "FLAG_AS_VULNERABILITY",
+      "priority": "HIGH"
+    }
+  ]
+}

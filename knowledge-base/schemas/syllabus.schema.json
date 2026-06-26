@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SyllabusMetadata",
+  "type": "object",
+  "properties": {
+    "branch": {
+      "type": "string"
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "subtopics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "learning_objectives": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "prerequisites": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "expected_study_hours": {
+                  "type": "number"
+                },
+                "difficulty": {
+                  "type": "string",
+                  "enum": [
+                    "EASY",
+                    "MEDIUM",
+                    "HARD"
+                  ]
+                },
+                "weightage_percent": {
+                  "type": "number"
+                },
+                "previous_year_frequency": {
+                  "type": "object"
+                },
+                "common_mistakes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "important_formulae": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "important_definitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "important_concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "recommended_learning_order": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "subtopics"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "topics"
+        ]
+      }
+    }
+  },
+  "required": [
+    "branch",
+    "subjects"
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Nodal & Mesh Analysis",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Superposition Theorem",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Thevenin & Norton",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Transient Response",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Transfer Function",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Feedback Principles",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Routh-Hurwitz & Nyquist",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Bode Plots",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

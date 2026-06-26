@@ -1,0 +1,11 @@
+{
+  "resource_type": "revision_plans",
+  "items": [
+    {
+      "title": "Standard GATE Reference for revision_plans",
+      "provider": "NPTEL / Core Authors",
+      "link": "https://nptel.ac.in",
+      "relevance": "HIGH"
+    }
+  ]
+}

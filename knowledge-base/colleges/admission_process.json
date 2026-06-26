@@ -1,0 +1,22 @@
+{
+  "institution_type": "admission_process",
+  "name": "Institute of Technology - ADMISSION_PROCESS Template",
+  "programs": [
+    {
+      "name": "M.Tech in Computer Science and Engineering",
+      "duration_years": 2,
+      "gate_paper_allowed": [
+        "CS"
+      ],
+      "cutoffs": {
+        "General": 650,
+        "OBC": 580,
+        "SC": 420,
+        "ST": 380
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0"
+  }
+}

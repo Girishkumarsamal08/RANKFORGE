@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Lexical Analysis",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Parsing",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Syntax Directed Translation",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Code Generation",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

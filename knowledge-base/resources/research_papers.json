@@ -1,0 +1,11 @@
+{
+  "resource_type": "research_papers",
+  "items": [
+    {
+      "title": "Standard GATE Reference for research_papers",
+      "provider": "NPTEL / Core Authors",
+      "link": "https://nptel.ac.in",
+      "relevance": "HIGH"
+    }
+  ]
+}

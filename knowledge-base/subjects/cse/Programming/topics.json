@@ -1,0 +1,10 @@
+{
+  "subject": "Programming",
+  "topics": [
+    "C Programming basics",
+    "Recursion",
+    "Arrays & Pointers",
+    "Stacks & Queues",
+    "Trees & Heaps"
+  ]
+}

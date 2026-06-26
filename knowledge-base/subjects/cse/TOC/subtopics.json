@@ -1,0 +1,14 @@
+{
+  "Regular Languages & DFA": [
+    "Core subtopic of Regular Languages & DFA"
+  ],
+  "Context Free Languages & PDA": [
+    "Core subtopic of Context Free Languages & PDA"
+  ],
+  "Turing Machines": [
+    "Core subtopic of Turing Machines"
+  ],
+  "Decidability": [
+    "Core subtopic of Decidability"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "subject": "ComputerNetworks",
+  "topics": [
+    "OSI/TCP-IP Layers",
+    "Flow Control",
+    "Routing Algorithms",
+    "TCP/UDP",
+    "IP Addressing"
+  ]
+}

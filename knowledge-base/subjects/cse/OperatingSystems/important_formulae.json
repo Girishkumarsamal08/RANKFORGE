@@ -1,0 +1,22 @@
+[
+  {
+    "concept": "Processes & Threads",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "CPU Scheduling",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Deadlocks",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Memory Management",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "File Systems",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

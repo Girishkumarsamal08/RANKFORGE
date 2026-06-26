@@ -1,0 +1,11 @@
+{
+  "resource_type": "reference_materials",
+  "items": [
+    {
+      "title": "Standard GATE Reference for reference_materials",
+      "provider": "NPTEL / Core Authors",
+      "link": "https://nptel.ac.in",
+      "relevance": "HIGH"
+    }
+  ]
+}

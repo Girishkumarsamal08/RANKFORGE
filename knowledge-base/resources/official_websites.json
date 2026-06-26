@@ -1,0 +1,11 @@
+{
+  "resource_type": "official_websites",
+  "items": [
+    {
+      "title": "Standard GATE Reference for official_websites",
+      "provider": "NPTEL / Core Authors",
+      "link": "https://nptel.ac.in",
+      "relevance": "HIGH"
+    }
+  ]
+}

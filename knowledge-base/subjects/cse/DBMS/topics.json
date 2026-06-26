@@ -1,0 +1,10 @@
+{
+  "subject": "DBMS",
+  "topics": [
+    "ER Model",
+    "Relational Algebra",
+    "SQL",
+    "Normalization",
+    "Transactions"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "subject": "COA",
+  "topics": [
+    "Machine Instructions",
+    "Addressing Modes",
+    "ALU & Datapath",
+    "Pipelining",
+    "Memory Hierarchy"
+  ]
+}

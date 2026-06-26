@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Energy Bands",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Carrier Transport",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "p-n Junction",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "BJT & MOSFET physics",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

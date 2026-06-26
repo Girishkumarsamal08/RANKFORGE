@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Sorting",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Graph Algorithms",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Greedy Techniques",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Dynamic Programming",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

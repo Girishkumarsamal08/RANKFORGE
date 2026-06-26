@@ -1,0 +1,9 @@
+{
+  "subject": "CompilerDesign",
+  "topics": [
+    "Lexical Analysis",
+    "Parsing",
+    "Syntax Directed Translation",
+    "Code Generation"
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Number Systems",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Combinational Logic",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Sequential Circuits",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "A/D & D/A Converters",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

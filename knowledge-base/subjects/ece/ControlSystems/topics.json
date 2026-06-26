@@ -1,0 +1,9 @@
+{
+  "subject": "ControlSystems",
+  "topics": [
+    "Transfer Function",
+    "Feedback Principles",
+    "Routh-Hurwitz & Nyquist",
+    "Bode Plots"
+  ]
+}

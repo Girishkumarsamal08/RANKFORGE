@@ -1,0 +1,11 @@
+{
+  "rule_type": "performance_rules",
+  "rules": [
+    {
+      "id": "rule_performance_rules_01",
+      "trigger": "accuracy < 0.40",
+      "action": "FLAG_AS_VULNERABILITY",
+      "priority": "HIGH"
+    }
+  ]
+}

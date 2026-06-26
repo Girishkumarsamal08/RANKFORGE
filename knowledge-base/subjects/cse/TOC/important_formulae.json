@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Regular Languages & DFA",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Context Free Languages & PDA",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Turing Machines",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Decidability",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

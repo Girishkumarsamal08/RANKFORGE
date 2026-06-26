@@ -1,0 +1,18 @@
+[
+  {
+    "concept": "Verbal Aptitude",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Quantitative Aptitude",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Analytical Aptitude",
+    "formula": "F = P*(1 + r)^n"
+  },
+  {
+    "concept": "Spatial Aptitude",
+    "formula": "F = P*(1 + r)^n"
+  }
+]

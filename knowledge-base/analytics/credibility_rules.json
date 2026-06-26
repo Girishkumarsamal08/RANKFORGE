@@ -1,0 +1,11 @@
+{
+  "rule_type": "credibility_rules",
+  "rules": [
+    {
+      "id": "rule_credibility_rules_01",
+      "trigger": "accuracy < 0.40",
+      "action": "FLAG_AS_VULNERABILITY",
+      "priority": "HIGH"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2026-06-26",
+  "source": "Official GATE Organizing Committee",
+  "sections": [
+    {
+      "title": "Standard Exam rules Rules",
+      "content": "Template content to be populated from official GATE information brochures."
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "status": "VALIDATED_TEMPLATE"
+  }
+}

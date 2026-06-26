@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "metric": "average_marks",
+  "data": [],
+  "metadata": {
+    "status": "SCHEMA_ONLY"
+  }
+}

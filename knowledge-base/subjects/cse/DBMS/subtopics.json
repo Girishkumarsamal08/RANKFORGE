@@ -1,0 +1,17 @@
+{
+  "ER Model": [
+    "Core subtopic of ER Model"
+  ],
+  "Relational Algebra": [
+    "Core subtopic of Relational Algebra"
+  ],
+  "SQL": [
+    "Core subtopic of SQL"
+  ],
+  "Normalization": [
+    "Core subtopic of Normalization"
+  ],
+  "Transactions": [
+    "Core subtopic of Transactions"
+  ]
+}
