@@ -10,7 +10,7 @@ import Sidebar from '../../../components/Sidebar';
 import { testsApi, analyticsApi } from '../../../services/api';
 import { initTest } from '../../../features/testSlice';
 import { DashboardAnalytics } from '../../../types';
-import { FileText, Play, ShieldAlert, Award, Loader2, AlertTriangle, BookOpen } from 'lucide-react';
+import { FileText, Play, ShieldAlert, Award, Loader2, AlertTriangle } from 'lucide-react';
 
 const GATE_BRANCH_MAP: Record<string, string> = {
   AE: 'Aerospace Engineering (AE)',
@@ -105,13 +105,8 @@ export default function StartTestPage() {
   const [activeLoadingKey, setActiveLoadingKey] = useState<string | null>(null);
   
   const [selectedYear, setSelectedYear] = useState('2025');
-  const [activeBranch, setActiveBranch] = useState('CS');
 
-  useEffect(() => {
-    if (user?.branch) {
-      setActiveBranch(user.branch);
-    }
-  }, [user]);
+  const activeBranch = user?.branch || 'CS';
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<DashboardAnalytics>({
     queryKey: ['dashboardAnalytics'],
@@ -242,27 +237,9 @@ export default function StartTestPage() {
         <Sidebar />
 
         <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full h-full">
-          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
-              <p className="text-zinc-400 text-sm mt-1">Select your paper and configure your active testing workspace.</p>
-            </div>
-            
-            {/* Branch selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 font-semibold uppercase">View Paper:</span>
-              <select
-                value={activeBranch}
-                onChange={(e) => setActiveBranch(e.target.value)}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs font-bold text-white outline-none cursor-pointer"
-              >
-                {Object.entries(GATE_BRANCH_MAP).map(([code, name]) => (
-                  <option key={code} value={code} className="bg-zinc-950">
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-6">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
+            <p className="text-zinc-400 text-sm mt-1">Configure your active testing workspace for {branchFullName.split(' (')[0]}.</p>
           </div>
 
           {/* Year Selection Section */}
@@ -441,13 +418,13 @@ export default function StartTestPage() {
           ) : analytics ? (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm mt-6">
               <h3 className="text-base font-bold text-zinc-100 mb-1">Concept Vulnerabilities</h3>
-              <p className="text-xs text-zinc-455 mb-5">Ranked by accuracy and review priority</p>
+              <p className="text-xs text-zinc-450 mb-5">Ranked by accuracy and review priority</p>
 
               {analytics.weakTopics.length === 0 ? (
                 <div className="text-center py-10 px-4 border border-dashed border-zinc-850 rounded-xl bg-zinc-950/45 max-w-xl mx-auto my-2">
                   <AlertTriangle className="h-7 w-7 text-amber-500/80 mx-auto mb-3 animate-pulse" />
                   <h4 className="text-sm font-bold text-zinc-200 mb-1.5">No Diagnostic Data Available</h4>
-                  <p className="text-xs text-zinc-455 leading-relaxed">
+                  <p className="text-xs text-zinc-450 leading-relaxed">
                     Concept Vulnerabilities tracks your accuracy and average solving speed across core GATE subjects (Engineering Mathematics, General Aptitude, and {activeBranch}) to pinpoint weak areas. Attempt a test above to begin loading topic-wise diagnostics.
                   </p>
                 </div>
