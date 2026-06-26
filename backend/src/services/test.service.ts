@@ -31,7 +31,9 @@ export class TestService {
       modeText = 'Subject Paper';
     }
 
-    const examTitle = `GATE CS ${year} - ${modeText}`;
+    const branch = parts[1] || 'cs';
+    const branchUpper = branch.toUpperCase();
+    const examTitle = `GATE ${branchUpper} ${year} - ${modeText}`;
     const exam = await testRepository.getFirstOrCreateExam(examCode, examTitle);
 
     // 3. Check if we need to seed starter questions for this exam
@@ -333,15 +335,17 @@ export class TestService {
   // --- Seeding Core questions if DB is fresh ---
   private async seedExamData(examId: string, examCode?: string) {
     const parts = (examCode || '').toLowerCase().split('-');
+    const branch = parts[1] || 'cs'; // 'cs', 'ec'
     const year = parts[2] || '2025';
     const mode = parts[3] || 'full'; // 'ga', 'subject', 'full'
 
-    console.log(`Auto-seeding questions for exam identifier: ${examId}, year: ${year}, mode: ${mode}`);
+    console.log(`Auto-seeding questions for exam identifier: ${examId}, branch: ${branch}, year: ${year}, mode: ${mode}`);
     
     // Create subjects
     const subGA = await prisma.subject.create({ data: { name: 'General Aptitude', examId } });
     const subMath = await prisma.subject.create({ data: { name: 'Engineering Mathematics', examId } });
-    const subCore = await prisma.subject.create({ data: { name: 'Core Computer Science', examId } });
+    const subCoreName = branch === 'ec' ? 'Core Electronics & Communication' : 'Core Computer Science';
+    const subCore = await prisma.subject.create({ data: { name: subCoreName, examId } });
 
     // Create topics
     const topicVerbal = await prisma.topic.create({ data: { name: 'Verbal Aptitude', subjectId: subGA.id } });
@@ -354,15 +358,53 @@ export class TestService {
     const topicCalculus = await prisma.topic.create({ data: { name: 'Calculus', subjectId: subMath.id } });
     const topicDiscrete = await prisma.topic.create({ data: { name: 'Discrete Mathematics', subjectId: subMath.id } });
 
-    const topicProg = await prisma.topic.create({ data: { name: 'Programming & Data Structures', subjectId: subCore.id } });
-    const topicAlgo = await prisma.topic.create({ data: { name: 'Algorithms', subjectId: subCore.id } });
-    const topicTOC = await prisma.topic.create({ data: { name: 'Theory of Computation', subjectId: subCore.id } });
-    const topicCompiler = await prisma.topic.create({ data: { name: 'Compiler Design', subjectId: subCore.id } });
-    const topicOS = await prisma.topic.create({ data: { name: 'Operating Systems', subjectId: subCore.id } });
-    const topicDB = await prisma.topic.create({ data: { name: 'Databases', subjectId: subCore.id } });
-    const topicNetworks = await prisma.topic.create({ data: { name: 'Computer Networks', subjectId: subCore.id } });
-    const topicCOA = await prisma.topic.create({ data: { name: 'Computer Organization & Architecture', subjectId: subCore.id } });
-    const topicDigital = await prisma.topic.create({ data: { name: 'Digital Logic', subjectId: subCore.id } });
+    let topicProg: any = null, topicAlgo: any = null, topicTOC: any = null, topicCompiler: any = null, topicOS: any = null, topicDB: any = null, topicNetworks: any = null, topicCOA: any = null, topicDigital: any = null;
+    let tNet: any = null, tSignals: any = null, tDevices: any = null, tAnalog: any = null, tDigital: any = null, tControl: any = null, tComms: any = null, tEM: any = null;
+
+    let topicIds: Record<string, string> = {};
+    if (branch === 'ec') {
+      tNet = await prisma.topic.create({ data: { name: 'Network Theory', subjectId: subCore.id } });
+      tSignals = await prisma.topic.create({ data: { name: 'Signals & Systems', subjectId: subCore.id } });
+      tDevices = await prisma.topic.create({ data: { name: 'Electronic Devices', subjectId: subCore.id } });
+      tAnalog = await prisma.topic.create({ data: { name: 'Analog Circuits', subjectId: subCore.id } });
+      tDigital = await prisma.topic.create({ data: { name: 'Digital Circuits', subjectId: subCore.id } });
+      tControl = await prisma.topic.create({ data: { name: 'Control Systems', subjectId: subCore.id } });
+      tComms = await prisma.topic.create({ data: { name: 'Communications', subjectId: subCore.id } });
+      tEM = await prisma.topic.create({ data: { name: 'Electromagnetics', subjectId: subCore.id } });
+      
+      topicIds = {
+        'Network Theory': tNet.id,
+        'Signals & Systems': tSignals.id,
+        'Electronic Devices': tDevices.id,
+        'Analog Circuits': tAnalog.id,
+        'Digital Circuits': tDigital.id,
+        'Control Systems': tControl.id,
+        'Communications': tComms.id,
+        'Electromagnetics': tEM.id
+      };
+    } else {
+      topicProg = await prisma.topic.create({ data: { name: 'Programming & Data Structures', subjectId: subCore.id } });
+      topicAlgo = await prisma.topic.create({ data: { name: 'Algorithms', subjectId: subCore.id } });
+      topicTOC = await prisma.topic.create({ data: { name: 'Theory of Computation', subjectId: subCore.id } });
+      topicCompiler = await prisma.topic.create({ data: { name: 'Compiler Design', subjectId: subCore.id } });
+      topicOS = await prisma.topic.create({ data: { name: 'Operating Systems', subjectId: subCore.id } });
+      topicDB = await prisma.topic.create({ data: { name: 'Databases', subjectId: subCore.id } });
+      topicNetworks = await prisma.topic.create({ data: { name: 'Computer Networks', subjectId: subCore.id } });
+      topicCOA = await prisma.topic.create({ data: { name: 'Computer Organization & Architecture', subjectId: subCore.id } });
+      topicDigital = await prisma.topic.create({ data: { name: 'Digital Logic', subjectId: subCore.id } });
+      
+      topicIds = {
+        'Programming & Data Structures': topicProg.id,
+        'Algorithms': topicAlgo.id,
+        'Theory of Computation': topicTOC.id,
+        'Compiler Design': topicCompiler.id,
+        'Operating Systems': topicOS.id,
+        'Databases': topicDB.id,
+        'Computer Networks': topicNetworks.id,
+        'Computer Organization & Architecture': topicCOA.id,
+        'Digital Logic': topicDigital.id
+      };
+    }
 
     const gaQuestionsData = [
       {
@@ -784,27 +826,138 @@ export class TestService {
       }
     ];
 
-    const coreCSQuestionsData: any[] = [...highFidelityCS];
+    let coreQuestionsData: any[] = [];
 
-    // Pad core CS questions to reach 45 questions using variations
-    const csTopics = [topicProg, topicAlgo, topicTOC, topicCompiler, topicOS, topicDB, topicNetworks, topicCOA, topicDigital];
-    let qIdCounter = coreCSQuestionsData.length + 1;
-    while (coreCSQuestionsData.length < 45) {
-      const topic = csTopics[coreCSQuestionsData.length % csTopics.length];
-      const isTwoMark = coreCSQuestionsData.length >= 20; // 20 questions of 1 mark, 25 questions of 2 marks
-      const marks = isTwoMark ? 2.0 : 1.0;
-      
-      coreCSQuestionsData.push({
-        text: `[GATE CS ${year} - Q${20 + qIdCounter}] Consider a query optimization problem in ${topic.name}. If the cost function is parameterized by relation sizes, what is the optimal execution path complexity?`,
-        type: 'MCQ',
-        options: ['O(N log N) dynamic plan', 'O(N^2) greedy evaluation', 'O(2^N) exhaustive search', 'O(1) table lookup'],
-        correctAnswer: '0',
-        explanation: `Under typical query optimizer algorithms in ${topic.name}, dynamic programming is used to find the optimal path in polynomial or sub-exponential time depending on join sizes, yielding O(N log N) or O(N^2) complexity.`,
-        marks,
-        subjectId: subCore.id,
-        topicId: topic.id
-      });
-      qIdCounter++;
+    if (branch === 'ec') {
+      const highFidelityEC = [
+        {
+          text: 'In a series RLC circuit at resonance, the impedance of the circuit is:',
+          type: 'MCQ',
+          options: ['Zero', 'Minimum and purely resistive', 'Maximum and purely inductive', 'Infinite'],
+          correctAnswer: '1',
+          explanation: 'At resonance, the inductive reactance and capacitive reactance cancel each other out (XL = XC). The total impedance is Z = R, which is minimum and purely resistive.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: tNet.id
+        },
+        {
+          text: 'The Fourier transform of a unit impulse function delta(t) is:',
+          type: 'MCQ',
+          options: ['1', 'delta(f)', 'e^(-j2pi f)', '0'],
+          correctAnswer: '0',
+          explanation: 'The Fourier transform of delta(t) is the integral of delta(t)*e^(-j2pi f t) dt from -inf to +inf, which evaluates to e^0 = 1.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: tSignals.id
+        },
+        {
+          text: 'The depletion region width in a p-n junction diode increases with:',
+          type: 'MCQ',
+          options: ['Increase in forward bias voltage', 'Increase in reverse bias voltage', 'Increase in doping concentration', 'None of the above'],
+          correctAnswer: '1',
+          explanation: 'Reverse biasing pulls majority carriers away from the junction, thereby exposing more immobile ions and increasing the depletion region width.',
+          marks: 1.0,
+          subjectId: subCore.id,
+          topicId: tDevices.id
+        },
+        {
+          text: 'An ideal operational amplifier is characterized by:',
+          type: 'MCQ',
+          options: [
+            'Infinite input impedance and zero output impedance',
+            'Zero input impedance and infinite output impedance',
+            'Infinite input impedance and infinite output impedance',
+            'Zero input impedance and zero output impedance'
+          ],
+          correctAnswer: '0',
+          explanation: 'An ideal op-amp has infinite input resistance (draws no current) and zero output resistance (can drive any load).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: tAnalog.id
+        },
+        {
+          text: 'Which of the following logic gates is considered a universal logic gate?',
+          type: 'MCQ',
+          options: ['AND', 'OR', 'NAND', 'XOR'],
+          correctAnswer: '2',
+          explanation: 'NAND and NOR gates are universal gates because any boolean function can be implemented using only NAND gates or only NOR gates.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: tDigital.id
+        },
+        {
+          text: 'A system has a closed-loop transfer function T(s) = 10 / (s^2 + 3s + 2). The system is:',
+          type: 'MCQ',
+          options: ['Stable', 'Unstable', 'Marginally stable', 'Critically stable'],
+          correctAnswer: '0',
+          explanation: 'The poles of the transfer function are the roots of s^2 + 3s + 2 = 0, which are s = -1 and s = -2. Since both poles lie in the left half of the s-plane, the system is stable.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: tControl.id
+        },
+        {
+          text: 'In frequency modulation (FM), the frequency deviation of the carrier is proportional to:',
+          type: 'MCQ',
+          options: ['Amplitude of the modulating signal', 'Frequency of the modulating signal', 'Phase of the modulating signal', 'None of the above'],
+          correctAnswer: '0',
+          explanation: 'In FM, the instantaneous frequency of the carrier varies linearly with the amplitude of the modulating signal. Thus, the frequency deviation is proportional to the amplitude.',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: tComms.id
+        },
+        {
+          text: 'Maxwell\'s equation curl(H) = J + dD/dt is a statement of:',
+          type: 'MCQ',
+          options: ['Faraday\'s Law', 'Ampere\'s Law with Maxwell\'s correction', 'Gauss\'s Law', 'Coulomb\'s Law'],
+          correctAnswer: '1',
+          explanation: 'curl(H) = J + dD/dt is Ampere\'s circuital law modified by Maxwell to include displacement current (dD/dt).',
+          marks: 2.0,
+          subjectId: subCore.id,
+          topicId: tEM.id
+        }
+      ];
+
+      coreQuestionsData = [...highFidelityEC];
+      const ecTopics = [tNet, tSignals, tDevices, tAnalog, tDigital, tControl, tComms, tEM];
+      let qIdCounter = coreQuestionsData.length + 1;
+      while (coreQuestionsData.length < 45) {
+        const topic = ecTopics[coreQuestionsData.length % ecTopics.length];
+        const isTwoMark = coreQuestionsData.length >= 20;
+        const marks = isTwoMark ? 2.0 : 1.0;
+
+        coreQuestionsData.push({
+          text: `[GATE EC ${year} - Q${20 + qIdCounter}] Consider a signal propagation problem in ${topic.name}. Calculate the power spectral density or transfer impedance parameters under steady state.`,
+          type: 'MCQ',
+          options: ['Standard resonance mode', 'Transient response attenuation', 'S-parameter matching matrix', 'Phase-locked loop state'],
+          correctAnswer: '0',
+          explanation: `In ${topic.name}, system analysis under these parameters requires calculating impedance matrices or spectral components matching the input excitations.`,
+          marks,
+          subjectId: subCore.id,
+          topicId: topic.id
+        });
+        qIdCounter++;
+      }
+    } else {
+      coreQuestionsData = [...highFidelityCS];
+      const csTopics = [topicProg, topicAlgo, topicTOC, topicCompiler, topicOS, topicDB, topicNetworks, topicCOA, topicDigital];
+      let qIdCounter = coreQuestionsData.length + 1;
+      while (coreQuestionsData.length < 45) {
+        const topic = csTopics[coreQuestionsData.length % csTopics.length];
+        const isTwoMark = coreQuestionsData.length >= 20;
+        const marks = isTwoMark ? 2.0 : 1.0;
+
+        coreQuestionsData.push({
+          text: `[GATE CS ${year} - Q${20 + qIdCounter}] Consider a query optimization problem in ${topic.name}. If the cost function is parameterized by relation sizes, what is the optimal execution path complexity?`,
+          type: 'MCQ',
+          options: ['O(N log N) dynamic plan', 'O(N^2) greedy evaluation', 'O(2^N) exhaustive search', 'O(1) table lookup'],
+          correctAnswer: '0',
+          explanation: `Under typical query optimizer algorithms in ${topic.name}, dynamic programming is used to find the optimal path in polynomial or sub-exponential time depending on join sizes, yielding O(N log N) or O(N^2) complexity.`,
+          marks,
+          subjectId: subCore.id,
+          topicId: topic.id
+        });
+        qIdCounter++;
+      }
     }
 
     // Now, filter questions based on the mode and seed
@@ -813,31 +966,26 @@ export class TestService {
       // Seed 10 GA questions
       finalQuestions = [...gaQuestionsData];
     } else if (mode === 'subject') {
-      // Seed 55 subject questions (10 Math + 45 Core CS)
-      // Standard: 25 questions of 1 mark, 30 questions of 2 marks
-      // Assign 1.0 or 2.0 marks systematically to Math and CS to meet standard
+      // Seed 55 subject questions (10 Math + 45 Core CS / EC)
       mathQuestionsData.forEach((q, idx) => {
         q.marks = idx < 5 ? 1.0 : 2.0; // 5 of 1 mark, 5 of 2 marks
       });
-      coreCSQuestionsData.forEach((q, idx) => {
+      coreQuestionsData.forEach((q, idx) => {
         q.marks = idx < 20 ? 1.0 : 2.0; // 20 of 1 mark, 25 of 2 marks
       });
-      finalQuestions = [...mathQuestionsData, ...coreCSQuestionsData];
+      finalQuestions = [...mathQuestionsData, ...coreQuestionsData];
     } else {
-      // Seed 65 questions (10 GA + 10 Math + 45 Core CS)
-      // GA: 5 of 1 mark, 5 of 2 marks
+      // Seed 65 questions (10 GA + 10 Math + 45 Core CS / EC)
       gaQuestionsData.forEach((q, idx) => {
         q.marks = idx < 5 ? 1.0 : 2.0;
       });
-      // Math: 5 of 1 mark, 5 of 2 marks
       mathQuestionsData.forEach((q, idx) => {
         q.marks = idx < 5 ? 1.0 : 2.0;
       });
-      // CS: 20 of 1 mark, 25 of 2 marks
-      coreCSQuestionsData.forEach((q, idx) => {
+      coreQuestionsData.forEach((q, idx) => {
         q.marks = idx < 20 ? 1.0 : 2.0;
       });
-      finalQuestions = [...gaQuestionsData, ...mathQuestionsData, ...coreCSQuestionsData];
+      finalQuestions = [...gaQuestionsData, ...mathQuestionsData, ...coreQuestionsData];
     }
 
     for (const q of finalQuestions) {

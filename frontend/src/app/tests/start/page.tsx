@@ -17,9 +17,9 @@ export default function StartTestPage() {
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [activeLoadingKey, setActiveLoadingKey] = useState<string | null>(null);
   
   const [selectedYear, setSelectedYear] = useState('2025');
-  const [selectedMode, setSelectedMode] = useState('full'); // 'ga', 'subject', 'full'
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<DashboardAnalytics>({
     queryKey: ['dashboardAnalytics'],
@@ -33,7 +33,8 @@ export default function StartTestPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleStartExam = async () => {
+  const handleStartExam = async (branch: string, mode: string) => {
+    const key = `${branch}-${mode}`;
     // Request fullscreen mode first
     try {
       if (document.documentElement.requestFullscreen) {
@@ -47,9 +48,10 @@ export default function StartTestPage() {
     }
 
     setLoading(true);
+    setActiveLoadingKey(key);
     try {
-      // Initialize GATE CS mock test with the chosen configuration
-      const response = await testsApi.start(`gate-cs-${selectedYear}-${selectedMode}`);
+      // Initialize GATE mock test with the chosen configuration
+      const response = await testsApi.start(`gate-${branch}-${selectedYear}-${mode}`);
       
       // Dispatch payload to Redux store
       dispatch(initTest({
@@ -69,23 +71,67 @@ export default function StartTestPage() {
       }
     } finally {
       setLoading(false);
+      setActiveLoadingKey(null);
     }
+  };
+
+  const renderExamCard = (
+    branch: string,
+    mode: string,
+    title: string,
+    questionsCount: string,
+    timerLimit: string,
+    maxMarks: string,
+    description: string
+  ) => {
+    const key = `${branch}-${mode}`;
+    const isThisLoading = loading && activeLoadingKey === key;
+    
+    return (
+      <div className="flex flex-col h-full rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-5 hover:border-zinc-700/80 hover:bg-zinc-900/60 transition shadow-sm justify-between">
+        <div>
+          <span className="text-[10px] text-brand-400 font-bold uppercase tracking-wider">{mode === 'ga' ? 'Aptitude' : mode === 'subject' ? 'Core Subject' : 'Comprehensive'}</span>
+          <h3 className="text-base font-bold text-white mt-1 mb-2">{title}</h3>
+          <p className="text-[11px] text-zinc-400 leading-relaxed mb-4">{description}</p>
+          
+          <div className="space-y-1.5 text-[10px] text-zinc-300 font-mono mb-6 bg-zinc-950/40 rounded-xl p-3 border border-zinc-850">
+            <div className="flex justify-between">
+              <span className="text-zinc-500 font-sans">Questions:</span>
+              <span className="font-semibold text-white">{questionsCount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500 font-sans">Time Limit:</span>
+              <span className="font-semibold text-white">{timerLimit}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500 font-sans">Max Marks:</span>
+              <span className="font-semibold text-white">{maxMarks}</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => handleStartExam(branch, mode)}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-brand-700 transition disabled:opacity-50 cursor-pointer w-full"
+        >
+          {isThisLoading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Unlocking...</span>
+            </>
+          ) : (
+            <>
+              <Play className="h-3.5 w-3.5 shrink-0" />
+              <span>Start Assessed Attempt</span>
+            </>
+          )}
+        </button>
+      </div>
+    );
   };
 
   if (!isAuthenticated) return null;
-
-  // Configuration metrics
-  const getMetrics = () => {
-    if (selectedMode === 'ga') {
-      return { questionsCount: '10 Questions', timerLimit: '30 Minutes', maxMarks: '15.00 Marks' };
-    }
-    if (selectedMode === 'subject') {
-      return { questionsCount: '55 Questions', timerLimit: '150 Minutes', maxMarks: '85.00 Marks' };
-    }
-    return { questionsCount: '65 Questions', timerLimit: '180 Minutes', maxMarks: '100.00 Marks' };
-  };
-
-  const metrics = getMetrics();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-transparent">
@@ -97,143 +143,83 @@ export default function StartTestPage() {
         <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-4xl mx-auto w-full h-full">
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold tracking-tight text-white">GATE Diagnostic Portal</h1>
-            <p className="text-zinc-400 text-sm mt-1">Select and configure your active testing workspace.</p>
+            <p className="text-zinc-400 text-sm mt-1">Select your paper and configure your active testing workspace.</p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 shadow-sm overflow-hidden">
-            <div className="bg-brand-600 p-6 text-white flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white">
-                <FileText className="h-6 w-6" />
+          {/* Year Selection Section */}
+          <div className="mb-8 p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 shadow-sm">
+            <label className="text-xs font-bold text-zinc-450 uppercase tracking-widest block mb-3">
+              Select Exam Reference Year (PYQ Source)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {['2025', '2024', '2023', '2022', '2021', '2020'].map((year) => (
+                <button
+                  key={year}
+                  onClick={() => setSelectedYear(year)}
+                  className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                    selectedYear === year
+                      ? 'bg-brand-600 border-brand-500 text-white shadow-lg shadow-brand-900/20'
+                      : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                  }`}
+                >
+                  GATE {year}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Instructions banner */}
+          <div className="mb-8 p-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/20 text-xs text-zinc-400 space-y-2.5">
+            <h3 className="font-bold text-zinc-200 text-sm uppercase tracking-wider mb-2 text-zinc-350">Diagnostic Test Instructions & Rules</h3>
+            <div className="flex items-start gap-2.5">
+              <ShieldAlert className="h-4.5 w-4.5 text-amber-500 shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-zinc-200">Anti-Cheat Active</strong>: Swapping tabs, exiting fullscreen, or minimizing the browser window triggers warning logs sent directly to the AI engine. Keep focus on the test window.
+              </span>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Award className="h-4.5 w-4.5 text-zinc-400 shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-zinc-200">GATE Marking Standard</strong>: MCQs have 1/3 negative marking. MSQs and NATs do not have negative marks. NAT questions require keyboard input values.
+              </span>
+            </div>
+          </div>
+
+          {/* Exam Section: Computer Science */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/20">
+                <FileText className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-brand-200">Customizable Assessment Builder</span>
-                <h2 className="text-xl font-bold mt-0.5">GATE Computer Science (CS) Mock Exam</h2>
+                <h2 className="text-xl font-bold text-white">GATE Computer Science (CS)</h2>
+                <p className="text-xs text-zinc-500 mt-0.5">Algorithms, OS, Databases, Computer Networks, Discrete Math, and more.</p>
               </div>
             </div>
 
-            <div className="p-6 md:p-8 space-y-6">
-              {/* Year Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {renderExamCard('cs', 'ga', 'General Aptitude (GA)', '10 Questions', '30 Minutes', '15.00 Marks', '10 compulsory questions covering verbal, quantitative, analytical, and spatial reasoning.')}
+              {renderExamCard('cs', 'subject', 'Subject Paper (CS)', '55 Questions', '150 Minutes', '85.00 Marks', '55 questions covering Engineering Mathematics and core Computer Science subjects.')}
+              {renderExamCard('cs', 'full', 'Full Mock Exam (CS)', '65 Questions', '180 Minutes', '100.00 Marks', '65 questions combining both GA and core CS sections for the complete actual exam experience.')}
+            </div>
+          </div>
+
+          {/* Exam Section: Electronics & Communication */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/20">
+                <FileText className="h-5 w-5" />
+              </div>
               <div>
-                <label className="text-xs font-bold text-zinc-450 uppercase tracking-widest block mb-3">
-                  Select Exam Reference Year (PYQ Source)
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {['2025', '2024', '2023', '2022', '2021', '2020'].map((year) => (
-                    <button
-                      key={year}
-                      onClick={() => setSelectedYear(year)}
-                      className={`px-4 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
-                        selectedYear === year
-                          ? 'bg-brand-600 border-brand-500 text-white shadow-lg shadow-brand-900/20'
-                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-                      }`}
-                    >
-                      GATE {year}
-                    </button>
-                  ))}
-                </div>
+                <h2 className="text-xl font-bold text-white">GATE Electronics & Communication (EC)</h2>
+                <p className="text-xs text-zinc-500 mt-0.5">Network Theory, Signals & Systems, Analog & Digital Circuits, Electromagnetics, and more.</p>
               </div>
+            </div>
 
-              {/* Mode Selection */}
-              <div>
-                <label className="text-xs font-bold text-zinc-450 uppercase tracking-widest block mb-3">
-                  Select Exam Format / Segment
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {[
-                    {
-                      id: 'ga',
-                      title: 'General Aptitude (GA)',
-                      desc: '10 questions (15 marks) covering compulsory verbal & numerical reasoning.',
-                    },
-                    {
-                      id: 'subject',
-                      title: 'Subject Paper',
-                      desc: '55 questions (85 marks) covering Engineering Math and Core CS subjects.',
-                    },
-                    {
-                      id: 'full',
-                      title: 'Full Mock Exam',
-                      desc: '65 questions (100 marks) combining GA and Subject sections for complete actual exam experience.',
-                    },
-                  ].map((modeOpt) => (
-                    <button
-                      key={modeOpt.id}
-                      onClick={() => setSelectedMode(modeOpt.id)}
-                      className={`p-4 rounded-xl border transition text-left cursor-pointer flex flex-col h-full ${
-                        selectedMode === modeOpt.id
-                          ? 'bg-brand-950/20 border-brand-500 text-white'
-                          : 'bg-zinc-950/60 border-zinc-850 text-zinc-400 hover:border-zinc-800 hover:text-zinc-300'
-                      }`}
-                    >
-                      <span className={`text-xs font-extrabold uppercase mb-1 tracking-wider ${selectedMode === modeOpt.id ? 'text-brand-400' : 'text-zinc-500'}`}>
-                        {modeOpt.title}
-                      </span>
-                      <p className="text-[11px] leading-relaxed font-medium mt-1">
-                        {modeOpt.desc}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Exam Info Blocks */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Questions</span>
-                  <p className="text-xl font-bold text-white mt-1">{metrics.questionsCount}</p>
-                </div>
-                <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Timer Limit</span>
-                  <p className="text-xl font-bold text-white mt-1">{metrics.timerLimit}</p>
-                </div>
-                <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Simulated Max Marks</span>
-                  <p className="text-xl font-bold text-white mt-1">{metrics.maxMarks}</p>
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="space-y-3">
-                <h3 className="font-bold text-zinc-200 text-sm uppercase tracking-wider">Instructions & Rules</h3>
-                
-                <div className="space-y-2 text-xs text-zinc-400 leading-relaxed">
-                  <div className="flex items-start gap-2.5">
-                    <ShieldAlert className="h-4.5 w-4.5 text-amber-500 shrink-0 mt-0.5" />
-                    <span>
-                      <strong className="text-zinc-200">Anti-Cheat Active</strong>: Swapping tabs, exiting fullscreen, or minimizing the browser window triggers warning logs sent directly to the AI engine. Keep focus on the test window.
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <Award className="h-4.5 w-4.5 text-zinc-400 shrink-0 mt-0.5" />
-                    <span>
-                      <strong className="text-zinc-200">GATE Marking Standard</strong>: MCQs have 1/3 negative marking. MSQs and NATs do not have negative marks. NAT questions require keyboard input values.
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Button Action */}
-              <div className="border-t border-zinc-800 pt-6">
-                <button
-                  onClick={handleStartExam}
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-900/20 transition hover:bg-brand-700 disabled:opacity-50 cursor-pointer w-full md:w-auto"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                      <span>Unlocking workspace...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4.5 w-4.5 shrink-0" />
-                      <span>Start Assessed Attempt</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {renderExamCard('ec', 'ga', 'General Aptitude (GA)', '10 Questions', '30 Minutes', '15.00 Marks', '10 compulsory questions covering verbal, quantitative, analytical, and spatial reasoning.')}
+              {renderExamCard('ec', 'subject', 'Subject Paper (EC)', '55 Questions', '150 Minutes', '85.00 Marks', '55 questions covering Engineering Mathematics and core Electronics & Communication subjects.')}
+              {renderExamCard('ec', 'full', 'Full Mock Exam (EC)', '65 Questions', '180 Minutes', '100.00 Marks', '65 questions combining both GA and core EC sections for the complete actual exam experience.')}
             </div>
           </div>
 
