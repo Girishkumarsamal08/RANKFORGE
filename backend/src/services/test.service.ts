@@ -47,10 +47,10 @@ export class TestService {
     }
 
     // 2. Parse examCode to identify year and mode
-    // Expected format: gate-cs-[year]-[mode], e.g. gate-cs-2025-ga, gate-cs-2025-subject, gate-cs-2025-full
     const parts = examCode.split('-');
+    const branch = parts[1] || 'cs';
     const year = parts[2] || '2025';
-    const mode = parts[3] || 'full'; // 'ga', 'subject', 'full'
+    const mode = parts[3] || 'full';
 
     // Determine exam duration and custom title
     let durationSeconds = 10800; // default 180 mins for full
@@ -63,26 +63,16 @@ export class TestService {
       modeText = 'Subject Paper';
     }
 
-    const branch = parts[1] || 'cs';
     const branchUpper = branch.toUpperCase();
+    
+    // Generate unique exam code for every attempt to guarantee fresh questions
+    const timestamp = Date.now();
+    const uniqueExamCode = `gate-${branch}-${year}-${mode}-${timestamp}`;
+    const examTitle = `GATE ${branchUpper} ${year} - ${modeText} (Attempt #${timestamp.toString().slice(-6)})`;
 
-    // 3. Count previous attempts to determine attempt number and generate unique exam papers
-    const attemptsCount = await prisma.testAttempt.count({
-      where: {
-        userId,
-        exam: {
-          code: {
-            startsWith: `gate-${branch}-${year}-${mode}`
-          }
-        }
-      }
-    });
-    const attemptNum = attemptsCount + 1;
-    const uniqueExamCode = `gate-${branch}-${year}-${mode}-att${attemptNum}-${userId}`;
-    const examTitle = `GATE ${branchUpper} ${year} - ${modeText} (Attempt #${attemptNum})`;
     const exam = await testRepository.getFirstOrCreateExam(uniqueExamCode, examTitle);
 
-    // 4. Check if we need to seed starter questions for this unique exam paper
+    // 3. Check if we need to seed starter questions for this exam
     const existingQuestions = await testRepository.getQuestionsByExam(exam.id);
     if (existingQuestions.length === 0) {
       await this.seedExamData(exam.id, uniqueExamCode);
@@ -151,7 +141,6 @@ export class TestService {
     await redisClient.del(`user:${attempt.userId}:active_attempt`);
     await redisClient.del(`attempt:${attemptId}:violations`);
     await redisClient.del(`dashboard:${attempt.userId}`); // Invalidate dashboard cache
-
 
     // 1. Save anti-cheat logs
     if (antiCheatLogs && antiCheatLogs.length > 0) {
@@ -251,7 +240,7 @@ export class TestService {
       score: totalScore,
       rankEstimated,
       percentile,
-      status, // COMPLETED or SUBMITTED
+      status, 
       endTime: new Date()
     });
 
@@ -288,7 +277,6 @@ export class TestService {
     const remainingSeconds = Math.max(0, attempt.durationSeconds - elapsedSeconds);
 
     if (remainingSeconds <= 0) {
-      // Auto submit test since timer expired
       await testRepository.createAntiCheatLog(attemptId, 'AUTO_SUBMIT', 'Test automatically submitted due to server timer expiration.', attempt.userId);
       const result = await this.submitTest(attemptId, [], [], 'SUBMITTED');
       
@@ -319,7 +307,6 @@ export class TestService {
       throw new Error('Test attempt not found');
     }
 
-    // If test is not in progress, do nothing
     if (attempt.status !== 'IN_PROGRESS') {
       return {
         autoSubmitted: false,
@@ -329,7 +316,6 @@ export class TestService {
       };
     }
 
-    // 1. Calculate penalty
     const PENALTIES: Record<string, number> = {
       TAB_SWITCH: 10,
       WINDOW_BLUR: 10,
@@ -338,27 +324,18 @@ export class TestService {
     };
     const penalty = PENALTIES[eventType] || 0;
 
-    // 2. Increment Redis violation counter
     const newViolationsCount = await redisClient.incr(`attempt:${attemptId}:violations`);
-
-    // 3. Deduct penalty from credibility score
     const newCredibilityScore = Math.max(0, attempt.credibilityScore - penalty);
 
-    // 4. Log to DB AntiCheatLog table
     await testRepository.createAntiCheatLog(attemptId, eventType, details, userId || attempt.userId);
 
-    // 5. Update violations and credibility score on attempt in PostgreSQL
     await testRepository.updateAttempt(attemptId, {
       violationsCount: newViolationsCount,
       credibilityScore: newCredibilityScore
     });
 
-    // 6. Check for auto-submit (violations > 3 or AUTO_SUBMIT event)
     if (newViolationsCount > 3 || eventType === 'AUTO_SUBMIT') {
-      // Log another anti-cheat log for AUTO_SUBMIT
       await testRepository.createAntiCheatLog(attemptId, 'AUTO_SUBMIT', 'Test automatically submitted due to security violations.', userId || attempt.userId);
-      
-      // Auto submit attempt
       const result = await this.submitTest(attemptId, answers, [], 'SUBMITTED');
       
       return {
@@ -387,27 +364,6 @@ export class TestService {
     const mode = parts[3] || 'full';
 
     console.log(`Auto-seeding questions for exam identifier: ${examId}, branch: ${branchUpper}, year: ${year}, mode: ${mode}`);
-
-    // Randomize numerical parameters dynamically for this attempt
-    const gaMen1 = Math.floor(Math.random() * 8) + 6; // 6 to 13
-    const gaDays1 = Math.floor(Math.random() * 12) + 10; // 10 to 21
-    const gaMen2 = Math.floor(Math.random() * 8) + 12; // 12 to 19
-    const gaAns = Math.round((gaMen1 * gaDays1) / gaMen2);
-
-    const trainLen1 = [120, 150, 180, 200][Math.floor(Math.random() * 4)];
-    const trainLen2 = [100, 120, 150, 180][Math.floor(Math.random() * 4)];
-    const trainSpeed = [30, 45, 60, 90][Math.floor(Math.random() * 4)];
-    const relSpeedMs = trainSpeed * 2 * 5 / 18;
-    const trainTime = Math.round((trainLen1 + trainLen2) / relSpeedMs);
-
-    const ev1 = Math.floor(Math.random() * 3) + 1; // 1 to 3
-    const ev2 = Math.floor(Math.random() * 3) + 2; // 2 to 4
-    const ev3 = Math.floor(Math.random() * 3) + 4; // 4 to 6
-    const detVal = (ev1 * ev2 * ev3) * (ev1 * ev2 * ev3);
-    const mathOptions = [detVal - 20, detVal - 10, detVal - 5, detVal].map(String);
-
-    const pBVal = [0.4, 0.5, 0.8][Math.floor(Math.random() * 3)];
-    const pCond = parseFloat((0.2 / pBVal).toFixed(2));
     
     // Create subjects
     const subGA = await prisma.subject.create({ data: { name: 'General Aptitude', examId } });
@@ -437,6 +393,30 @@ export class TestService {
       coreTopicMap[tName] = tObj.id;
     }
 
+    // Dynamic numeric randomizations to refresh question variations
+    const m1 = [8, 10, 12, 15][Math.floor(Math.random() * 4)];
+    const d1 = [12, 15, 20, 24][Math.floor(Math.random() * 4)];
+    const m2 = [4, 5, 6, 8][Math.floor(Math.random() * 4)];
+    const ansWork = Math.round((m1 * d1) / m2);
+
+    const tLen1 = [120, 150, 180, 200][Math.floor(Math.random() * 4)];
+    const tLen2 = [100, 120, 150, 160][Math.floor(Math.random() * 4)];
+    const speedKmh = [36, 45, 54, 72][Math.floor(Math.random() * 4)];
+    const relativeSpeedMps = (speedKmh * 2 * 5) / 18;
+    const timeToCross = Math.round((tLen1 + tLen2) / relativeSpeedMps);
+
+    const dieSum = [8, 9, 10, 11][Math.floor(Math.random() * 4)];
+    const dieSumMap: Record<number, { ans: string, expl: string }> = {
+      8: { ans: '0.139', expl: 'Favorable outcomes for sum 8: {(2,6), (3,5), (4,4), (5,3), (6,2)} (5 outcomes). P = 5/36 ≈ 0.139.' },
+      9: { ans: '0.111', expl: 'Favorable outcomes for sum 9: {(3,6), (4,5), (5,4), (6,3)} (4 outcomes). P = 4/36 ≈ 0.111.' },
+      10: { ans: '0.083', expl: 'Favorable outcomes for sum 10: {(4,6), (5,5), (6,4)} (3 outcomes). P = 3/36 ≈ 0.083.' },
+      11: { ans: '0.056', expl: 'Favorable outcomes for sum 11: {(5,6), (6,5)} (2 outcomes). P = 2/36 ≈ 0.056.' }
+    };
+    const dieData = dieSumMap[dieSum] || dieSumMap[10];
+
+    const cubeSide = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
+    const cubesTwoFaces = 12 * (cubeSide - 2);
+
     const gaQuestionsData = [
       {
         text: 'Select the word closest in meaning to: PRAGMATIC',
@@ -459,11 +439,11 @@ export class TestService {
         topicId: topicVerbal.id
       },
       {
-        text: `A work can be completed by ${gaMen1} men in ${gaDays1} days. How many days will it take for ${gaMen2} men to complete the same work? (Round to the nearest integer)`,
+        text: `A work can be completed by ${m1} men in ${d1} days. How many days will it take for ${m2} men to complete the same work?`,
         type: 'NAT',
         options: [],
-        correctAnswer: `${gaAns}`,
-        explanation: `Total man-days required = ${gaMen1} * ${gaDays1} = ${gaMen1 * gaDays1}. For ${gaMen2} men, days required = ${gaMen1 * gaDays1} / ${gaMen2} ≈ ${gaAns} days.`,
+        correctAnswer: ansWork.toString(),
+        explanation: `Total man-days required = ${m1} * ${d1} = ${m1 * d1}. For ${m2} men, days required = ${m1 * d1} / ${m2} = ${ansWork} days.`,
         marks: 1.0,
         subjectId: subGA.id,
         topicId: topicQuant.id
@@ -494,31 +474,31 @@ export class TestService {
         topicId: topicVerbal.id
       },
       {
-        text: `Two trains of length ${trainLen1}m and ${trainLen2}m are running in opposite directions at ${trainSpeed} km/h each. How many seconds will they take to cross each other? (Round to the nearest integer)`,
+        text: `Two trains of length ${tLen1}m and ${tLen2}m are running in opposite directions at ${speedKmh} km/h each. How many seconds will they take to cross each other?`,
         type: 'NAT',
         options: [],
-        correctAnswer: `${trainTime}`,
-        explanation: `Total distance = ${trainLen1}m + ${trainLen2}m = ${trainLen1 + trainLen2}m. Relative speed in opposite direction = ${trainSpeed} + ${trainSpeed} = ${trainSpeed * 2} km/h = ${trainSpeed * 2} * 5/18 = ${relSpeedMs.toFixed(2)} m/s. Time = ${trainLen1 + trainLen2} / ${relSpeedMs.toFixed(2)} ≈ ${trainTime} seconds.`,
+        correctAnswer: timeToCross.toString(),
+        explanation: `Total distance = ${tLen1}m + ${tLen2}m = ${tLen1 + tLen2}m. Relative speed in opposite direction = ${speedKmh} + ${speedKmh} = ${speedKmh * 2} km/h = ${speedKmh * 2} * 5/18 = ${relativeSpeedMps} m/s. Time = ${tLen1 + tLen2} / ${relativeSpeedMps} = ${timeToCross} seconds.`,
         marks: 2.0,
         subjectId: subGA.id,
         topicId: topicQuant.id
       },
       {
-        text: 'A fair die is rolled twice. What is the probability that the sum of the numbers obtained is 10? (Round to 3 decimal places)',
+        text: `A fair die is rolled twice. What is the probability that the sum of the numbers obtained is ${dieSum}? (Round to 3 decimal places)`,
         type: 'NAT',
         options: [],
-        correctAnswer: '0.083',
-        explanation: 'Total sample space = 36. Favorable outcomes for sum 10: {(4,6), (5,5), (6,4)} (3 outcomes). P(Sum 10) = 3/36 = 1/12 ≈ 0.083.',
+        correctAnswer: dieData.ans,
+        explanation: dieData.expl,
         marks: 2.0,
         subjectId: subGA.id,
         topicId: topicAnalytical.id
       },
       {
-        text: 'A cube of side 4cm is painted red on all faces. It is cut into 1cm cubes. How many small cubes will have exactly 2 faces painted?',
+        text: `A cube of side ${cubeSide}cm is painted red on all faces. It is cut into 1cm cubes. How many small cubes will have exactly 2 faces painted?`,
         type: 'NAT',
         options: [],
-        correctAnswer: '24',
-        explanation: 'Cubes with exactly 2 faces painted are found on the edges, excluding the corners. A cube has 12 edges. For a 4x4x4 cube, each edge has 4 - 2 = 2 such cubes. Total = 12 * 2 = 24.',
+        correctAnswer: cubesTwoFaces.toString(),
+        explanation: `Cubes with exactly 2 faces painted are found on the edges, excluding the corners. A cube has 12 edges. For a ${cubeSide}x${cubeSide}x${cubeSide} cube, each edge has ${cubeSide} - 2 = ${cubeSide - 2} such cubes. Total = 12 * ${cubeSide - 2} = ${cubesTwoFaces}.`,
         marks: 2.0,
         subjectId: subGA.id,
         topicId: topicSpatial.id
@@ -534,7 +514,7 @@ export class TestService {
         topicId: topicAnalytical.id
       },
       {
-        text: 'A shopkeeper sells an item at a profit of 20%. If he had bought it for 10% less and sold it for $18 more, he would have gained 40%. What is the cost price of the item?',
+        text: 'Shopkeeper sells an item at a profit of 20%. If he had bought it for 10% less and sold it for $18 more, he would have gained 40%. What is the cost price?',
         type: 'MCQ',
         options: ['300', '400', '500', '600'],
         correctAnswer: '0',
@@ -545,13 +525,27 @@ export class TestService {
       }
     ];
 
+    // Math random values
+    const traceVal1 = [-2, -1, 0, 1][Math.floor(Math.random() * 4)];
+    const traceVal2 = [1, 2, 3, 4][Math.floor(Math.random() * 4)];
+    const traceVal3 = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
+    const traceSum = traceVal1 + traceVal2 + traceVal3;
+
+    const probValPdfLimit = [2, 4, 5][Math.floor(Math.random() * 3)];
+    const probK = (2 / (probValPdfLimit * probValPdfLimit)).toFixed(4);
+
+    const ballsWhite = [3, 4, 5][Math.floor(Math.random() * 3)];
+    const ballsBlack = [5, 6, 7][Math.floor(Math.random() * 3)];
+    const ballsTotal = ballsWhite + ballsBlack;
+    const probBlackDraw = ((ballsBlack / ballsTotal) * ((ballsBlack - 1) / (ballsTotal - 1)) * ((ballsBlack - 2) / (ballsTotal - 2))).toFixed(3);
+
     const mathQuestionsData = [
       {
-        text: `Consider a 3x3 matrix A with eigenvalues ${ev1}, ${ev2}, and ${ev3}. What is the determinant of matrix A^2?`,
+        text: 'Consider a 3x3 matrix A with eigenvalues 1, 2, and 5. What is the determinant of matrix A^2?',
         type: 'MCQ',
-        options: mathOptions,
+        options: ['8', '10', '20', '100'],
         correctAnswer: '3',
-        explanation: `The determinant of a matrix is the product of its eigenvalues. So det(A) = ${ev1} * ${ev2} * ${ev3} = ${ev1 * ev2 * ev3}. Thus, det(A^2) = (det(A))^2 = ${ev1 * ev2 * ev3}^2 = ${detVal}.`,
+        explanation: 'The determinant of a matrix is the product of its eigenvalues. So det(A) = 1 * 2 * 5 = 10. Thus, det(A^2) = (det(A))^2 = 10^2 = 100.',
         marks: 1.0,
         subjectId: subMath.id,
         topicId: topicLinear.id
@@ -567,11 +561,11 @@ export class TestService {
         topicId: topicLinear.id
       },
       {
-        text: 'What is the trace of a 3x3 matrix with eigenvalues -1, 0, and 2?',
+        text: `What is the trace of a 3x3 matrix with eigenvalues ${traceVal1}, ${traceVal2}, and ${traceVal3}?`,
         type: 'MCQ',
-        options: ['-1', '0', '1', '2'],
+        options: [(traceSum - 2).toString(), (traceSum + 1).toString(), traceSum.toString(), (traceSum + 3).toString()],
         correctAnswer: '2',
-        explanation: 'The trace of a matrix is the sum of its eigenvalues. So Trace = -1 + 0 + 2 = 1 (which is option index 2).',
+        explanation: `The trace of a matrix is the sum of its eigenvalues. So Trace = ${traceVal1} + ${traceVal2} + ${traceVal3} = ${traceSum}.`,
         marks: 1.0,
         subjectId: subMath.id,
         topicId: topicLinear.id
@@ -597,31 +591,31 @@ export class TestService {
         topicId: topicLinear.id
       },
       {
-        text: 'Let the probability density function of a continuous random variable X be f(x) = k*x for 0 <= x <= 2, and 0 otherwise. What is the value of k?',
+        text: `Let the probability density function of a continuous random variable X be f(x) = k*x for 0 <= x <= ${probValPdfLimit}, and 0 otherwise. What is the value of k? (Round to 4 decimal places)`,
+        type: 'NAT',
+        options: [],
+        correctAnswer: parseFloat(probK).toString(),
+        explanation: `Integral from 0 to ${probValPdfLimit} of f(x) dx = 1 => k * [x^2/2] from 0 to ${probValPdfLimit} = k * ${(probValPdfLimit * probValPdfLimit) / 2} = 1 => k = 2 / ${(probValPdfLimit * probValPdfLimit)} = ${probK}.`,
+        marks: 2.0,
+        subjectId: subMath.id,
+        topicId: topicProbability.id
+      },
+      {
+        text: 'If P(A) = 0.6, P(B) = 0.4 and P(A ∩ B) = 0.2, then what is the conditional probability P(A|B)? (Round to 2 decimal places)',
         type: 'NAT',
         options: [],
         correctAnswer: '0.5',
-        explanation: 'Integral from 0 to 2 of f(x) dx = 1 => k * [x^2/2] from 0 to 2 = k * 2 = 1 => k = 0.5.',
+        explanation: 'P(A|B) = P(A ∩ B) / P(B) = 0.2 / 0.4 = 0.5.',
         marks: 2.0,
         subjectId: subMath.id,
         topicId: topicProbability.id
       },
       {
-        text: `If P(A) = 0.6, P(B) = ${pBVal} and P(A ∩ B) = 0.2, then what is the conditional probability P(A|B)? (Round to 2 decimal places)`,
+        text: `A bag contains ${ballsWhite} white and ${ballsBlack} black balls. Three balls are drawn at random. What is the probability that all three are black? (Round to 3 decimal places)`,
         type: 'NAT',
         options: [],
-        correctAnswer: `${pCond}`,
-        explanation: `P(A|B) = P(A ∩ B) / P(B) = 0.2 / ${pBVal} = ${pCond}.`,
-        marks: 2.0,
-        subjectId: subMath.id,
-        topicId: topicProbability.id
-      },
-      {
-        text: 'A bag contains 4 white and 6 black balls. Three balls are drawn at random. What is the probability that all three are black? (Round to 3 decimal places)',
-        type: 'NAT',
-        options: [],
-        correctAnswer: '0.167',
-        explanation: 'P(All 3 Black) = (6/10) * (5/9) * (4/8) = 120 / 720 = 1/6 ≈ 0.167.',
+        correctAnswer: probBlackDraw,
+        explanation: `P(All 3 Black) = (${ballsBlack}/${ballsTotal}) * (${ballsBlack - 1}/${ballsTotal - 1}) * (${ballsBlack - 2}/${ballsTotal - 2}) = ${probBlackDraw}.`,
         marks: 2.0,
         subjectId: subMath.id,
         topicId: topicProbability.id
@@ -649,6 +643,15 @@ export class TestService {
     ];
 
     let coreQuestionsData: any[] = [];
+
+    // Core CS Questions with dynamic values
+    const pipelineVal1 = [8, 9, 10][Math.floor(Math.random() * 3)];
+    const pipelineVal2 = [11, 12, 13, 14][Math.floor(Math.random() * 4)];
+    const pipelineVal3 = [6, 7, 8][Math.floor(Math.random() * 3)];
+    const pipelineVal4 = [9, 10, 11][Math.floor(Math.random() * 3)];
+    const pipelineVal5 = [7, 8, 9][Math.floor(Math.random() * 3)];
+    const pipelineRegDelay = [1, 2][Math.floor(Math.random() * 2)];
+    const pipelineAns = pipelineVal2 + pipelineRegDelay;
 
     if (branchUpper === 'CS') {
       const highFidelityCS = [
@@ -848,11 +851,11 @@ export class TestService {
           topicId: coreTopicMap['Compiler Design'] || seededCoreTopics[3].id
         },
         {
-          text: 'A pipelined processor has 5 stages with delays 9, 12, 7, 10, 8 nanoseconds. What is the clock cycle time in nanoseconds if the pipeline register delay is 1 nanosecond?',
+          text: `A pipelined processor has 5 stages with delays ${pipelineVal1}, ${pipelineVal2}, ${pipelineVal3}, ${pipelineVal4}, ${pipelineVal5} nanoseconds. What is the clock cycle time in nanoseconds if the pipeline register delay is ${pipelineRegDelay} nanosecond?`,
           type: 'MCQ',
-          options: ['10', '11', '12', '13'],
+          options: [(pipelineAns - 3).toString(), (pipelineAns - 2).toString(), (pipelineAns - 1).toString(), pipelineAns.toString()],
           correctAnswer: '3',
-          explanation: 'The clock cycle time of a pipeline is determined by the slowest stage delay plus the register delay. Slowest stage = 12ns. Register delay = 1ns. Clock cycle = 12 + 1 = 13ns.',
+          explanation: `The clock cycle time of a pipeline is determined by the slowest stage delay plus the register delay. Slowest stage = ${pipelineVal2}ns. Register delay = ${pipelineRegDelay}ns. Clock cycle = ${pipelineVal2} + ${pipelineRegDelay} = ${pipelineAns}ns.`,
           marks: 2.0,
           subjectId: subCore.id,
           topicId: coreTopicMap['Computer Organization & Architecture'] || seededCoreTopics[7].id
@@ -952,24 +955,29 @@ export class TestService {
       coreQuestionsData = [...highFidelityEC];
     }
 
-    // Now populate coreQuestionsData to a total of 45 questions dynamically
+    // Dynamic question templates for all other core subjects
     let qIdCounter = coreQuestionsData.length + 1;
     while (coreQuestionsData.length < 45) {
       const topic = seededCoreTopics[coreQuestionsData.length % seededCoreTopics.length];
       const isTwoMark = coreQuestionsData.length >= 20;
       const marks = isTwoMark ? 2.0 : 1.0;
 
+      // Random dynamic parameters to construct completely fresh test configurations
+      const randomValueA = [10, 15, 20, 25, 40, 50][Math.floor(Math.random() * 6)];
+      const randomValueB = [2, 4, 5, 8, 10][Math.floor(Math.random() * 5)];
+      const calcAns = randomValueA * randomValueB;
+
       coreQuestionsData.push({
-        text: `[GATE ${branchUpper} ${year} - Q${20 + qIdCounter}] Consider a fundamental design or analysis problem in ${topic.name}. Calculate the optimal state-space model or parameter configurations matching standard boundary settings.`,
+        text: `[GATE ${branchUpper} ${year} - Q${20 + qIdCounter}] Consider a fundamental design or parameter validation problem in ${topic.name}. If the primary load parameters are A = ${randomValueA} units and scaling factor B = ${randomValueB}, calculate the total load factor or steady state stability parameter.`,
         type: 'MCQ',
         options: [
-          'Standard steady-state boundary response',
-          'Transient parameter convergence limit',
-          'Linear parameter matrix eigenvalues representation',
-          'Dynamic state feedback stabilization'
+          `Load factor = ${calcAns} units (steady state)`,
+          `Load factor = ${calcAns + 15} units (transient stage)`,
+          `Load factor = ${calcAns / 2} units (dynamic attenuation)`,
+          `Load factor = ${calcAns * 2} units (overload cutoff)`
         ],
         correctAnswer: '0',
-        explanation: `Under standard exam conditions in ${topic.name}, the parameters must be analyzed using steady-state methods to resolve the system's boundary state vector.`,
+        explanation: `Under normal system characteristics in ${topic.name}, the total parameter value is obtained by scaling the input parameter A with factor B: A * B = ${randomValueA} * ${randomValueB} = ${calcAns}.`,
         marks,
         subjectId: subCore.id,
         topicId: topic.id
@@ -977,7 +985,7 @@ export class TestService {
       qIdCounter++;
     }
 
-    // Now, filter questions based on the mode and seed
+    // Filter questions based on exam mode
     let finalQuestions: any[] = [];
     if (mode === 'ga') {
       finalQuestions = [...gaQuestionsData];
@@ -1007,6 +1015,6 @@ export class TestService {
         data: q
       });
     }
-    console.log(`Seeding complete. Seeded ${finalQuestions.length} questions for exam ${examId}`);
+    console.log(`Seeding complete. Seeded ${finalQuestions.length} randomized questions for exam ${examId}`);
   }
 }
