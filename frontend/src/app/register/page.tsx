@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '../../services/api';
-import { useAuth } from '../../hooks/useAuth';
 import Navbar from '../../components/Navbar';
 import { GraduationCap, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -42,7 +41,6 @@ const GATE_BRANCHES = [
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { loginUser } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,9 +66,8 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await authApi.register({ name, email, password, branch });
-      loginUser(response.user, response.token);
-      router.push('/dashboard');
+      await authApi.register({ name, email, password, branch });
+      router.push('/login?registered=true');
     } catch (err: any) {
       const data = err.response?.data;
       if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {

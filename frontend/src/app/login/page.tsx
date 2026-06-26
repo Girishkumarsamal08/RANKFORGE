@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import Navbar from '../../components/Navbar';
 import { GraduationCap, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered') === 'true';
   const { loginUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,6 +61,13 @@ export default function LoginPage() {
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-white">Welcome Back</h2>
             <p className="mt-1.5 text-sm text-zinc-400">Sign in to your RANKFORGE account to study</p>
           </div>
+
+          {registered && (
+            <div className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-950/20 p-3.5 border border-emerald-900/40 text-xs font-medium text-emerald-400 animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 text-emerald-400" />
+              <span>Registration successful! Please sign in using your credentials.</span>
+            </div>
+          )}
 
           {error && (
             <div className="mt-5 flex items-center gap-2 rounded-xl bg-red-950/20 p-3.5 border border-red-900/40 text-xs font-medium text-red-400">
@@ -122,5 +131,20 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center bg-transparent">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-800 border-t-brand-500" />
+          <span className="text-sm font-semibold text-zinc-500">Loading...</span>
+        </div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }
