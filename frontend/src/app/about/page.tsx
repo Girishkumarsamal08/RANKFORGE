@@ -79,7 +79,7 @@ export default function AboutPage() {
   const team = [
     {
       name: 'Girish Kumar Samal',
-      role: 'Founder & Partner',
+      role: 'Co-Founder & Partner',
       image: '/Girish.png',
       linkedin: 'https://www.linkedin.com/in/girish-kumar-samal08/',
       github: 'https://github.com/Girishkumarsamal08',
@@ -87,7 +87,7 @@ export default function AboutPage() {
     },
     {
       name: 'Swayamsuchee Pradhan',
-      role: 'Co-Founder & Partner',
+      role: 'Founder & Partner',
       image: '/Swayamsuchee.jpeg',
       linkedin: 'https://www.linkedin.com/in/swayamsuchee-pradhan09/',
       github: 'https://github.com/SwayamsucheePradhan09',
@@ -445,13 +445,13 @@ export default function AboutPage() {
                   <a href="https://www.girishkumar.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
                     Girish Kumar Samal
                   </a>
-                  <span className="text-[10px] text-zinc-500 block">Founder & Partner</span>
+                  <span className="text-[10px] text-zinc-500 block">Co-Founder & Partner</span>
                 </div>
                 <div className="text-[11px]">
                   <a href="https://www.swayamsuchee.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
                     Swayamsuchee Pradhan
                   </a>
-                  <span className="text-[10px] text-zinc-500 block">Co-Founder & Partner</span>
+                  <span className="text-[10px] text-zinc-500 block">Founder & Partner</span>
                 </div>
               </div>
             </div>

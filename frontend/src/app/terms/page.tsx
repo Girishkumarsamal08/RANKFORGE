@@ -320,13 +320,13 @@ export default function TermsOfUsePage() {
                   <a href="https://www.girishkumar.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
                     Girish Kumar Samal
                   </a>
-                  <span className="text-[10px] text-zinc-500 block">Founder & Partner</span>
+                  <span className="text-[10px] text-zinc-500 block">Co-Founder & Partner</span>
                 </div>
                 <div className="text-[11px]">
                   <a href="https://www.swayamsuchee.dev/" target="_blank" rel="noreferrer" className="font-semibold text-zinc-300 hover:text-brand-400 transition block">
                     Swayamsuchee Pradhan
                   </a>
-                  <span className="text-[10px] text-zinc-500 block">Co-Founder & Partner</span>
+                  <span className="text-[10px] text-zinc-500 block">Founder & Partner</span>
                 </div>
               </div>
             </div>
