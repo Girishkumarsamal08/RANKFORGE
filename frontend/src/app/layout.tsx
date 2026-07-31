@@ -6,6 +6,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'RANKFORGE',
   description: 'AI-Powered GATE mock testing, rank prediction, and weak topic recommendations engine.',
+  verification: {
+    google: 'M2cVNyiiJT4QL-Bwu3P7sD9b7sLzA5Mt2Zzx-NChWsM',
+  },
 };
 
 export default function RootLayout({
